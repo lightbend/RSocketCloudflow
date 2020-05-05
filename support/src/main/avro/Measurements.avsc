@@ -1,0 +1,19 @@
+{
+  "namespace": "cloudflow.examples.sensordata.rsocket.avro",
+  "type": "record",
+  "name": "Measurements",
+  "fields": [
+    {
+      "name": "power",
+      "type": "double"
+    },
+    {
+      "name": "rotorSpeed",
+      "type": "double"
+    },
+    {
+      "name": "windSpeed",
+      "type": "double"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "namespace": "cloudflow.examples.sensordata.rsocket.avro",
+  "type": "record",
+  "name": "InvalidMetric",
+  "fields":[
+    {
+      "name": "metric", "type": "cloudflow.examples.sensordata.rsocket.avro.Metric"
+    },
+    {
+      "name": "error", "type": "string"
+    }
+  ]
+}
