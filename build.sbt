@@ -51,7 +51,7 @@ lazy val support = (project in file("./support"))
   .settings(
     name := "support",
     version := thisVersion,
-    libraryDependencies ++= Seq(typesafeConfig, ficus, logback, scalaTest),
+    libraryDependencies ++= Seq(logback, scalaTest),
   )
   .settings(commonSettings)
 
@@ -60,7 +60,7 @@ lazy val sensorData = (project in file("./sensordata"))
   .settings(
     name := "sensordata",
     version := thisVersion,
-    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, slf4, logback)
+    libraryDependencies ++= Seq(marshallers, rsocketCore, rsocketTransport, slf4, logback)
   )
   .settings(commonSettings)
   .dependsOn(support)

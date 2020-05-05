@@ -21,10 +21,10 @@ object FireAndForgetClient {
       .connectWith(TcpClientTransport.create("localhost", 7000))
       .block
 
-    socket.fireAndForget(DefaultPayload.create("Hello world1!".getBytes)).block
-    socket.fireAndForget(DefaultPayload.create("Hello world2!".getBytes)).block
-    socket.fireAndForget(DefaultPayload.create("Hello world3!".getBytes)).block
-    socket.fireAndForget(DefaultPayload.create("Hello world4!".getBytes)).block
+    socket.fireAndForget(DefaultPayload.create("Hello world1!")).block
+    socket.fireAndForget(DefaultPayload.create("Hello world2!")).block
+    socket.fireAndForget(DefaultPayload.create("Hello world3!")).block
+    socket.fireAndForget(DefaultPayload.create("Hello world4!")).block
 
     Thread.sleep(1000)
     socket.dispose();
@@ -38,7 +38,7 @@ class EchoSocketAcceptorFF extends SocketAcceptor {
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new AbstractRSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
-        logger.info(s"Received 'fire-and-forget' request with payload: [${new String(payload.getData.array())}]")
+        logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
         Mono.empty()
       }
     })

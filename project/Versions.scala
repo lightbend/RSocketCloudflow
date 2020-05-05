@@ -18,9 +18,7 @@ object Versions {
   val RSocketVersion        = "1.0.0-RC7"
   val SLFVersion            = "1.7.25"
   val LogBackVersion        = "1.2.3"
-
-  val TypesafeConfigVersion = "1.3.3"
-  val FicusVersion          = "1.4.5"
+  val marshallersVersion    = "10.1.11"
 
   val scaltestVersion       = "3.0.5"
 }

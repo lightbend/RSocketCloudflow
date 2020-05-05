@@ -8,8 +8,7 @@ object Dependencies {
   val slf4                  = "org.slf4j"               % "slf4j-api"                           % SLFVersion
   val logback               = "ch.qos.logback"          % "logback-classic"                     % LogBackVersion
 
-  val typesafeConfig        = "com.typesafe"            %  "config"                             % TypesafeConfigVersion
-  val ficus                 = "com.iheart"              %% "ficus"                              % FicusVersion
+  val marshallers           = "com.typesafe.akka"       %% "akka-http-spray-json"               % marshallersVersion
 
   val scalaTest             = "org.scalatest"           %% "scalatest"                          % scaltestVersion    % "test"
 
