@@ -9,8 +9,8 @@ import cloudflow.examples.sensordata.rsocket.avro._
 
 class MetricsValidation extends AkkaStreamlet {
   val in = AvroInlet[Metric]("in")
-  val invalid = AvroOutlet[InvalidMetric]("invalid").withPartitioner(metric ⇒ metric.metric.deviceId.toString)
-  val valid = AvroOutlet[Metric]("valid").withPartitioner(RoundRobinPartitioner)
+  val invalid = AvroOutlet[InvalidMetric]("invalid")
+  val valid = AvroOutlet[Metric]("valid")
   val shape = StreamletShape(in).withOutlets(invalid, valid)
 
   override def createLogic = new RunnableGraphStreamletLogic() {

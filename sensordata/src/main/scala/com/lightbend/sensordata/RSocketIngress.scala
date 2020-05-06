@@ -18,7 +18,7 @@ import SensorDataJsonSupport._
 
 class RSocketIngress extends AkkaServerStreamlet with SprayJsonSupport {
 
-  val out = AvroOutlet[SensorData]("out").withPartitioner(RoundRobinPartitioner)
+  val out = AvroOutlet[SensorData]("out")
 
   def shape = StreamletShape.withOutlets(out)
 

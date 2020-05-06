@@ -9,7 +9,7 @@ import cloudflow.examples.sensordata.rsocket.avro._
 class SensorDataToMetrics extends AkkaStreamlet {
 
   val in = AvroInlet[SensorData]("in")
-  val out = AvroOutlet[Metric]("out").withPartitioner(RoundRobinPartitioner)
+  val out = AvroOutlet[Metric]("out")
   val shape = StreamletShape(in, out)
   def flow = FlowWithCommittableContext[SensorData]
     .mapConcat { data ⇒

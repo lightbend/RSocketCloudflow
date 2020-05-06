@@ -13,7 +13,7 @@ import reactor.core.publisher._
 
 class RSocketBinaryIngress extends AkkaServerStreamlet {
 
-  val out = AvroOutlet[SensorData]("out").withPartitioner(RoundRobinPartitioner)
+  val out = AvroOutlet[SensorData]("out")
 
   def shape = StreamletShape.withOutlets(out)
 
