@@ -30,7 +30,7 @@ class RSocketIngress extends AkkaServerStreamlet with SprayJsonSupport {
   }
 }
 
-class RSocketSource extends GraphStage[SourceShape[String]] {
+class RSocketSource[Out] extends GraphStage[SourceShape[Out]] {
 
   // the outlet port of this stage which produces Ints
   val out: akka.stream.Outlet[String] = Outlet("RsocketSource")
@@ -46,6 +46,7 @@ class RSocketSource extends GraphStage[SourceShape[String]] {
           .subscribe
         ()
       }
+
 
       // create a handler for the outlet
       setHandler(out, new OutHandler {
