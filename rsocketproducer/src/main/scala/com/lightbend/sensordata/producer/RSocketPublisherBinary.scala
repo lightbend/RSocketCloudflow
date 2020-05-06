@@ -20,7 +20,7 @@ object RSocketPublisherBinary {
       .connectWith(TcpClientTransport.create("0.0.0.0", 3000))
       .block
 
-    while(true){
+    while (true) {
       Thread.sleep(1000)
       val payload = DefaultPayload.create(generateData())
       socket.fireAndForget(payload).block

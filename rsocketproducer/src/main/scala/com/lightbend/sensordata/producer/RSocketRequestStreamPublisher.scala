@@ -11,12 +11,12 @@ import io.rsocket.transport.netty.client.{ TcpClientTransport, WebsocketClientTr
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.{ Flux, Mono }
 
-class RSocketRequestStreamPublisher {
+object RSocketRequestStreamPublisher extends App {
   val socket = RSocketConnector
-    .create()
+    .create
     .acceptor(new ClientMessageAcceptor)
     .connect(TcpClientTransport.create("0.0.0.0", 3000))
-    .block
+    .block().onClose().block()
 }
 
 class BinaryClientAcceptor extends AbstractRSocket {

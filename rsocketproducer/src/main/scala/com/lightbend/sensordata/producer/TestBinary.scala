@@ -8,8 +8,8 @@ import com.lightbend.sensordata.support.AvroSerde
 import cloudflow.examples.sensordata.rsocket.avro._
 import com.twitter.bijection.Injection
 import com.twitter.bijection.avro.SpecificAvroCodecs
-import io.rsocket.{AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor}
-import io.rsocket.core.{RSocketConnector, RSocketServer}
+import io.rsocket.{ AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor }
+import io.rsocket.core.{ RSocketConnector, RSocketServer }
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
 import io.rsocket.util.DefaultPayload
@@ -34,7 +34,7 @@ object TestBinary {
       .connectWith(TcpClientTransport.create("localhost", 7000))
       .block
 
-    1 to 5 foreach{_ =>
+    1 to 5 foreach { _ =>
       socket.fireAndForget(DefaultPayload.create(generateData())).block()
     }
 
@@ -49,7 +49,7 @@ object TestBinary {
     sensorAvroSerde.encode(data)
   }
 
-  def convertData(buffer : ByteBuffer): SensorData = {
+  def convertData(buffer: ByteBuffer): SensorData = {
     val data = new Array[Byte](buffer.remaining())
     buffer.get(data)
     val sensor = sensorAvroSerde.decode(data)
