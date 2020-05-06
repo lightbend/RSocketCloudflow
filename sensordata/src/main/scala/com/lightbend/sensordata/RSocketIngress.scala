@@ -5,13 +5,14 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.unmarshalling.FromByteStringUnmarshaller
 import akka.util.ByteString
 import cloudflow.examples.sensordata.rsocket.avro._
-import cloudflow.akkastream._
+import cloudflow.akkastream.{ Server, _ }
 import cloudflow.streamlets.avro._
 import cloudflow.streamlets._
 import io.rsocket._
 import reactor.core.publisher._
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server.TcpServerTransport
+
 import scala.concurrent.ExecutionContext
 import SensorDataJsonSupport._
 
@@ -21,19 +22,19 @@ class RSocketIngress extends AkkaServerStreamlet with SprayJsonSupport {
 
   def shape = StreamletShape.withOutlets(out)
 
-  override def createLogic() = new RSocketStreamletLogic[SensorData](out)
+  override def createLogic() = new RSocketStreamletLogic[SensorData](this, out)
 }
 
-class RSocketStreamletLogic[Out](outlet: CodecOutlet[Out])
-  (implicit context: AkkaStreamletContext, fbu: FromByteStringUnmarshaller[Out]) extends AkkaStreamletLogic {
+class RSocketStreamletLogic[Out](server: Server, outlet: CodecOutlet[Out])
+  (implicit context: AkkaStreamletContext, fbu: FromByteStringUnmarshaller[Out]) extends ServerStreamletLogic(server) {
 
   implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
 
   override def run(): Unit = {
     RSocketServer.create(new RSocketAcceptorImpl[Out](sinkRef(outlet)))
-      .bind(TcpServerTransport.create("localhost", 3000))
+      .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
-    ()
+    println(s"Bound RSocket server to port $containerPort")
   }
 }
 

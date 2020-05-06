@@ -15,7 +15,7 @@ object RSocketPublisher {
 
   def main(args: Array[String]): Unit = {
     val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("localhost", 3000))
+      .connectWith(TcpClientTransport.create("0.0.0.0", 3000))
       .block
 
     while(true){
