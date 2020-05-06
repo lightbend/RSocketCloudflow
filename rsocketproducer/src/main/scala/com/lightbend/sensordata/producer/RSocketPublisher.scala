@@ -10,7 +10,6 @@ import scala.util.Random
 
 object RSocketPublisher {
 
-
   val random = new Random()
 
   def main(args: Array[String]): Unit = {
@@ -18,7 +17,7 @@ object RSocketPublisher {
       .connectWith(TcpClientTransport.create("0.0.0.0", 3000))
       .block
 
-    while(true){
+    while (true) {
       Thread.sleep(1000)
       val payload = DefaultPayload.create(getData())
       socket.fireAndForget(payload).block

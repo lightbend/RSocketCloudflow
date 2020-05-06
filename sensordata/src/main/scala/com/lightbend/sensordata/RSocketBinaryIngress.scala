@@ -1,5 +1,7 @@
 package com.lightbend.sensordata
 
+import java.nio.ByteBuffer
+
 import akka.stream._
 import cloudflow.akkastream.{ Server, _ }
 import cloudflow.examples.sensordata.rsocket.avro._
@@ -9,6 +11,7 @@ import com.lightbend.sensordata.support.SensorDataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server.TcpServerTransport
+import io.rsocket.util.DefaultPayload
 import reactor.core.publisher._
 
 class RSocketBinaryIngress extends AkkaServerStreamlet {
@@ -35,11 +38,18 @@ class RSocketBinaryStreamletLogic(server: Server, outlet: CodecOutlet[SensorData
 
 class RSocketBinaryAcceptorImpl(writer: WritableSinkRef[SensorData]) extends SocketAcceptor {
 
-  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
+  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] = {
+    //    reactiveSocket
+    //      .requestStream(DefaultPayload.create("Please may I have a stream"))
+    //      .map[ByteBuffer](payload ⇒ payload.getData)
+    //      .doOnNext(buffer ⇒ SensorDataConverter.fromByteBuffer(buffer).map(writer.write))
+    //      .subscribe()
+
     Mono.just(new AbstractRSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
         SensorDataConverter.fromByteBuffer(payload.getData).map(writer.write)
         Mono.empty()
       }
     })
+  }
 }
