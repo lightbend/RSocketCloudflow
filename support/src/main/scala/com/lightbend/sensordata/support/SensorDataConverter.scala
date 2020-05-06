@@ -2,7 +2,7 @@ package com.lightbend.sensordata.support
 
 import java.nio.ByteBuffer
 
-import cloudflow.examples.sensordata.rsocket.avro.SensorData
+import cloudflow.examples.sensordata.rsocket.avro._
 import com.twitter.bijection.Injection
 import com.twitter.bijection.avro.SpecificAvroCodecs
 
