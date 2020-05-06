@@ -1,14 +1,15 @@
 package com.lightbend.sensordata
 
-import akka.stream._
 import cloudflow.akkastream.{ Server, _ }
 import cloudflow.examples.sensordata.rsocket.avro._
 import cloudflow.streamlets._
 import cloudflow.streamlets.avro._
-import com.lightbend.sensordata.support.SensorDataConverter
+import com.lightbend.sensordata.support.DataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server.TcpServerTransport
+import org.apache.avro.specific.SpecificRecordBase
+import org.apache.avro.Schema
 import reactor.core.publisher._
 
 class RSocketBinaryIngress extends AkkaServerStreamlet {
@@ -17,28 +18,28 @@ class RSocketBinaryIngress extends AkkaServerStreamlet {
 
   def shape = StreamletShape.withOutlets(out)
 
-  override def createLogic() = new RSocketBinaryStreamletLogic(this, out)
+  override def createLogic() = new RSocketBinaryStreamletLogic(this, SensorData.SCHEMA$, out)
 }
 
-class RSocketBinaryStreamletLogic(server: Server, outlet: CodecOutlet[SensorData])
+class RSocketBinaryStreamletLogic[out <: SpecificRecordBase](server: Server, schema: Schema, outlet: CodecOutlet[out])
   (implicit context: AkkaStreamletContext) extends ServerStreamletLogic(server) {
 
-  implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
-
   override def run(): Unit = {
-    RSocketServer.create(new RSocketBinaryAcceptorImpl(sinkRef(outlet)))
+    RSocketServer.create(new RSocketBinaryAcceptorImpl(sinkRef(outlet), schema))
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
     println(s"Bound RSocket server to port $containerPort")
   }
 }
 
-class RSocketBinaryAcceptorImpl(writer: WritableSinkRef[SensorData]) extends SocketAcceptor {
+class RSocketBinaryAcceptorImpl[out <: SpecificRecordBase](writer: WritableSinkRef[out], schema: Schema) extends SocketAcceptor {
+
+  val dataConverter = new DataConverter[out](schema)
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new AbstractRSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
-        SensorDataConverter.fromByteBuffer(payload.getData).map(writer.write)
+        dataConverter.fromByteBuffer(payload.getData).map(writer.write)
         Mono.empty()
       }
     })

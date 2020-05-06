@@ -2,7 +2,7 @@ package com.lightbend.sensordata
 
 import cloudflow.akkastream._
 import cloudflow.akkastream.scaladsl._
-import cloudflow.streamlets.{ RoundRobinPartitioner, StreamletShape }
+import cloudflow.streamlets._
 import cloudflow.streamlets.avro._
 import cloudflow.examples.sensordata.rsocket.avro._
 

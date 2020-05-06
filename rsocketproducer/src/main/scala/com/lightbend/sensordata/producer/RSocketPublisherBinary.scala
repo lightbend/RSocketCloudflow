@@ -9,11 +9,13 @@ import io.rsocket.util.DefaultPayload
 import scala.util.Random
 
 import cloudflow.examples.sensordata.rsocket.avro._
-import com.lightbend.sensordata.support.SensorDataConverter
+import com.lightbend.sensordata.support.DataConverter
 
 object RSocketPublisherBinary {
 
   val random = new Random()
+  val dataConverter = new DataConverter[SensorData](SensorData.SCHEMA$)
+
 
   def main(args: Array[String]): Unit = {
     val socket = RSocketConnector
@@ -30,6 +32,6 @@ object RSocketPublisherBinary {
   def generateData(): Array[Byte] = {
     val data = new SensorData(UUID.randomUUID(), Instant.ofEpochMilli(System.currentTimeMillis()),
       new Measurements(random.nextInt(1000) / 10.0, random.nextInt(20000) / 100.0, random.nextInt(2000) / 10.0))
-    SensorDataConverter.toBytes(data)
+    dataConverter.toBytes(data)
   }
 }
