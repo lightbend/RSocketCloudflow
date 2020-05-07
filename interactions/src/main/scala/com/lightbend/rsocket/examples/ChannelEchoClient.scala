@@ -1,16 +1,16 @@
 package com.lightbend.rsocket.examples
 
-import io.rsocket.{ AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor }
+import io.rsocket.{AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor}
 import io.rsocket.core.RSocketConnector
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
 import io.rsocket.util.DefaultPayload
-import java.time.{ Duration, Instant }
+import java.time._
 
-import org.reactivestreams.{ Publisher, Subscriber, Subscription }
+import org.reactivestreams._
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.{ Flux, Mono }
+import reactor.core.publisher.{BaseSubscriber, Flux, Hooks, Mono}
 
 object ChannelEchoClient {
 
@@ -18,23 +18,29 @@ object ChannelEchoClient {
 
   def main(args: Array[String]): Unit = {
 
+    Hooks.onErrorDropped((t: Throwable) => {})
+
     RSocketServer.create(new SocketAcceptorImpl())
-      .bind(TcpServerTransport.create("localhost", 7000)).subscribe
+      .bind(TcpServerTransport.create("localhost", 7000)).block
 
     val socket = RSocketConnector
       .connectWith(TcpClientTransport.create("localhost", 7000))
       .block
 
+    val backPressureSubscriber = new BackPressureSubscriber()
+
     socket
       .requestChannel(
-        Flux.interval(Duration.ofMillis(1000)).map(_ => {
+        Flux.interval(Duration.ofMillis(100)).map(_ => {
           val p = DefaultPayload.create("Hello")
           logger.info(s"Sending payload: [${p.getDataUtf8}]")
           p
         }))
-      .subscribe(new BackPressureSubscriber());
+      .subscribe(backPressureSubscriber);
 
-    Thread.sleep(1000)
+    Thread.sleep(10000)
+
+    backPressureSubscriber.dispose()
     socket.dispose();
   }
 }
@@ -58,32 +64,25 @@ private object BackPressureSubscriber {
   val NUMBER_OF_REQUESTS_TO_PROCESS = 5
 }
 
-private class BackPressureSubscriber extends Subscriber[Payload] {
+private class BackPressureSubscriber extends BaseSubscriber[Payload] {
 
   private val log = LoggerFactory.getLogger(this.getClass)
-  private var subscription: Subscription = null
   var receivedItems = 0
 
   import BackPressureSubscriber._
 
-  def onSubscribe(s: Subscription): Unit = {
-    this.subscription = s
-    subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
-  }
+  override def hookOnSubscribe(subscription: Subscription): Unit = subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
 
-  def onNext(payload: Payload): Unit = {
+  override def hookOnNext(value: Payload): Unit = {
     receivedItems += 1
     if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0) {
       log.info(s"Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")
-      subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
+      request(NUMBER_OF_REQUESTS_TO_PROCESS)
     }
   }
 
-  def onError(t: Throwable): Unit = {
-    log.error(s"Stream subscription error [$t]")
-  }
 
-  def onComplete(): Unit = {
-    log.info("Completing subscription")
-  }
+  override def hookOnComplete(): Unit = log.info("Completing subscription")
+
+  override def hookOnError(throwable: Throwable): Unit = log.error(s"Stream subscription error [$throwable]")
 }

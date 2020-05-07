@@ -18,8 +18,7 @@ object FireAndForgetClient {
       .subscribe
 
     val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("localhost", 7000))
-      .block
+      .connectWith(TcpClientTransport.create("localhost", 7000)).block()
 
     socket.fireAndForget(DefaultPayload.create("Hello world1!")).block
     socket.fireAndForget(DefaultPayload.create("Hello world2!")).block

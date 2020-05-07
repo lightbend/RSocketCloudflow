@@ -39,12 +39,12 @@ def sbtdockerAppBase(id: String)(base: String = id): Project = Project(id, base 
 lazy val rsocketproducer = sbtdockerAppBase("rsocket-data-publisher")("./rsocketproducer")
   .settings(
     mainClass in Compile := Some("com.lightbend.sensordata.producer.BinaryStreamingPublisher"),
-    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, slf4, logback)
+    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback)
   )
   .dependsOn(support)
 
 lazy val interactions = (project in file("./interactions"))
-  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, slf4, logback))
+  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback))
 
 lazy val support = (project in file("./support"))
   .enablePlugins(CloudflowAkkaStreamsLibraryPlugin)
