@@ -81,7 +81,6 @@ private class BackPressureSubscriber extends BaseSubscriber[Payload] {
     }
   }
 
-
   override def hookOnComplete(): Unit = log.info("Completing subscription")
 
   override def hookOnError(throwable: Throwable): Unit = log.error(s"Stream subscription error [$throwable]")
