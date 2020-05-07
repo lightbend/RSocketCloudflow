@@ -46,12 +46,12 @@ object Multiserver {
       ).block()
     }
 
-    Thread.sleep(2000)
+    Thread.sleep(3000)
     println("Execution statistics")
     hits.foreach(entry => println(s"Port : ${entry._1} -> count ${entry._2}"))
   }
 
-  def addHit(port: Int) : Unit = hits += (port -> (hits(port) + 1))
+  def addHit(port: Int) : Unit = this.synchronized{hits += port -> (hits(port) + 1)}
 }
 
 class FFAcceptorImplementation(port : Int) extends SocketAcceptor {
