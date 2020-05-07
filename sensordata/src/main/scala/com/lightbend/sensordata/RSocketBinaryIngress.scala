@@ -21,10 +21,12 @@ class RSocketBinaryIngress extends AkkaServerStreamlet {
   override def createLogic() = new RSocketBinaryStreamletLogic(this, SensorData.SCHEMA$, out)
 }
 
+// Create logic
 class RSocketBinaryStreamletLogic[out <: SpecificRecordBase](server: Server, schema: Schema, outlet: CodecOutlet[out])
   (implicit context: AkkaStreamletContext) extends ServerStreamletLogic(server) {
 
   override def run(): Unit = {
+    // Create server
     RSocketServer.create(new RSocketBinaryAcceptorImpl(sinkRef(outlet), schema))
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
@@ -34,11 +36,12 @@ class RSocketBinaryStreamletLogic[out <: SpecificRecordBase](server: Server, sch
 
 class RSocketBinaryAcceptorImpl[out <: SpecificRecordBase](writer: WritableSinkRef[out], schema: Schema) extends SocketAcceptor {
 
-  val dataConverter = new DataConverter[out](schema)
+  val dataConverter = new DataConverter[out](schema)          // Marshaller
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new AbstractRSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
+        // Get message and write to sink
         dataConverter.fromByteBuffer(payload.getData).map(writer.write)
         Mono.empty()
       }

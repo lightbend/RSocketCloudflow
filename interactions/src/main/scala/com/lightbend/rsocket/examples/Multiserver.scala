@@ -17,40 +17,46 @@ import scala.collection.JavaConverters._
 
 object Multiserver {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
-  private val ports = List(7000, 7001, 7002)
-  private var hits = Map(7000 -> 0, 7001 -> 0, 7002 -> 0)
+  private val logger = LoggerFactory.getLogger(this.getClass)   // Logger
+  private val ports = List(7000, 7001, 7002)                    // Ports
+  private var hits = Map(7000 -> 0, 7001 -> 0, 7002 -> 0)       // Stats map
 
   def main(args: Array[String]): Unit = {
+
+    // Create servers
     ports.foreach(port =>
       RSocketServer.create(new FFAcceptorImplementation(port))
         .bind(TcpServerTransport.create("0.0.0.0", port))
         .block
     )
 
+    // Create socket suppliers (clients)
     val rsocketSuppliers = ports.map(port =>
       new RSocketSupplier(() => Mono.just(RSocketConnector
         .connectWith(TcpClientTransport.create("0.0.0.0", port)).block()))
     ).asJava
 
+    // Create load balancer
     val balancer = LoadBalancedRSocketMono.create(Flux.create(
       (sink: FluxSink[util.Collection[RSocketSupplier]]) => sink.next(rsocketSuppliers)
     ))
 
-
-    System.out.println(s"Created balancer : $balancer")
-
+    // Send messages
     1 to 300 foreach{_ =>
       balancer.doOnNext(
         socket => socket.fireAndForget(DefaultPayload.create("Hello world")).block()
       ).block()
     }
 
+    // Wait to make sure that process completes
     Thread.sleep(3000)
+
+    // Print execution statistics
     println("Execution statistics")
     hits.foreach(entry => println(s"Port : ${entry._1} -> count ${entry._2}"))
   }
 
+  // Collect sttistics
   def addHit(port: Int) : Unit = this.synchronized{hits += port -> (hits(port) + 1)}
 }
 
@@ -61,13 +67,7 @@ class FFAcceptorImplementation(port : Int) extends SocketAcceptor {
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new AbstractRSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
-/*
-        try {
-          logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}] on port $port")
-        } catch {
-          case t: Throwable =>
-            println(s"Exception ${t.getMessage} on on port $port")
-        } */
+        // Peg request to the server
         Multiserver.addHit(port)
         Mono.empty()
       }

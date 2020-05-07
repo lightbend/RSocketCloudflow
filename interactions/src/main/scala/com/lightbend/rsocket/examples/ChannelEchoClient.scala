@@ -10,7 +10,7 @@ import java.time._
 
 import org.reactivestreams._
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.{BaseSubscriber, Flux, Hooks, Mono}
+import reactor.core.publisher._
 
 object ChannelEchoClient {
 
@@ -18,17 +18,22 @@ object ChannelEchoClient {
 
   def main(args: Array[String]): Unit = {
 
+    // Ensure clean disposal
     Hooks.onErrorDropped((t: Throwable) => {})
 
+    // Create server
     RSocketServer.create(new SocketAcceptorImpl())
       .bind(TcpServerTransport.create("localhost", 7000)).block
 
+    // Create client
     val socket = RSocketConnector
       .connectWith(TcpClientTransport.create("localhost", 7000))
       .block
 
+    // Back preassure
     val backPressureSubscriber = new BackPressureSubscriber()
 
+    // Request/responce
     socket
       .requestChannel(
         Flux.interval(Duration.ofMillis(100)).map(_ => {
@@ -52,36 +57,13 @@ class SocketAcceptorImpl extends SocketAcceptor {
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new AbstractRSocket() {
       override def requestChannel(payloads: Publisher[Payload]): Flux[Payload] =
+        // For every request
         Flux.from(payloads)
           .map(payload => {
+            // Log request
             logger.info(s"Received payload: [${payload.getMetadataUtf8}]")
+            // Send reply
             DefaultPayload.create("Echo: " + payload.getMetadataUtf8)
           })
     })
-}
-
-private object BackPressureSubscriber {
-  val NUMBER_OF_REQUESTS_TO_PROCESS = 5
-}
-
-private class BackPressureSubscriber extends BaseSubscriber[Payload] {
-
-  private val log = LoggerFactory.getLogger(this.getClass)
-  var receivedItems = 0
-
-  import BackPressureSubscriber._
-
-  override def hookOnSubscribe(subscription: Subscription): Unit = subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
-
-  override def hookOnNext(value: Payload): Unit = {
-    receivedItems += 1
-    if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0) {
-      log.info(s"Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")
-      request(NUMBER_OF_REQUESTS_TO_PROCESS)
-    }
-  }
-
-  override def hookOnComplete(): Unit = log.info("Completing subscription")
-
-  override def hookOnError(throwable: Throwable): Unit = log.error(s"Stream subscription error [$throwable]")
 }

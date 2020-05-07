@@ -10,14 +10,16 @@ import scala.util.Random
 
 object RSocketPublisher {
 
-
-  val random = new Random()
+  val random = new Random()                           // Random generator
 
   def main(args: Array[String]): Unit = {
+
+    // Create client
     val socket = RSocketConnector
       .connectWith(TcpClientTransport.create("0.0.0.0", 3000))
       .block
 
+    // Send messages
     while(true){
       Thread.sleep(1000)
       val payload = DefaultPayload.create(getData())
@@ -25,6 +27,7 @@ object RSocketPublisher {
     }
   }
 
+  // Create a JSON message
   def getData(): String =
     s"""{
        |        "deviceId": "${UUID.randomUUID().toString}",

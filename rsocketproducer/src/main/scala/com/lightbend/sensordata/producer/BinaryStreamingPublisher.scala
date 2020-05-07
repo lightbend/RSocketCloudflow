@@ -12,7 +12,8 @@ import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.{ Flux, Mono }
 
 object BinaryStreamingPublisher extends App {
-  println("Creating Socket")
+
+  // Create client
   val socket = RSocketConnector
     .create
     .acceptor(new ClientMessageAcceptor)
