@@ -10,7 +10,7 @@ import scala.util.Random
 
 object RSocketPublisher {
 
-  val random = new Random()                           // Random generator
+  val random = new Random() // Random generator
 
   def main(args: Array[String]): Unit = {
 
@@ -20,7 +20,7 @@ object RSocketPublisher {
       .block
 
     // Send messages
-    while(true){
+    while (true) {
       Thread.sleep(1000)
       val payload = DefaultPayload.create(getData())
       socket.fireAndForget(payload).block

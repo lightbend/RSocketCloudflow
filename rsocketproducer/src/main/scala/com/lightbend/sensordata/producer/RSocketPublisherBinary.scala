@@ -13,9 +13,8 @@ import com.lightbend.sensordata.support.DataConverter
 
 object RSocketPublisherBinary {
 
-  val random = new Random()                                             // Random generator
+  val random = new Random() // Random generator
   val dataConverter = new DataConverter[SensorData](SensorData.SCHEMA$) // Data converter
-
 
   def main(args: Array[String]): Unit = {
 
@@ -25,7 +24,7 @@ object RSocketPublisherBinary {
       .block
 
     // Send messages
-    while(true){
+    while (true) {
       Thread.sleep(1000)
       val payload = DefaultPayload.create(generateData())
       socket.fireAndForget(payload).block

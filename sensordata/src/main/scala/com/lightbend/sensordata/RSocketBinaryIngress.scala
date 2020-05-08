@@ -36,7 +36,7 @@ class RSocketBinaryStreamletLogic[out <: SpecificRecordBase](server: Server, sch
 
 class RSocketBinaryAcceptorImpl[out <: SpecificRecordBase](writer: WritableSinkRef[out], schema: Schema) extends SocketAcceptor {
 
-  val dataConverter = new DataConverter[out](schema)          // Marshaller
+  val dataConverter = new DataConverter[out](schema) // Marshaller
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new AbstractRSocket() {

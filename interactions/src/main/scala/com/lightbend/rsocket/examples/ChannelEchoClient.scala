@@ -1,6 +1,6 @@
 package com.lightbend.rsocket.examples
 
-import io.rsocket.{AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor}
+import io.rsocket.{ AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor }
 import io.rsocket.core.RSocketConnector
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.client.TcpClientTransport

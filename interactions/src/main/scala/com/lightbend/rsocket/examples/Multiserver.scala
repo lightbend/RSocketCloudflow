@@ -14,12 +14,11 @@ import reactor.core.publisher._
 
 import scala.collection.JavaConverters._
 
-
 object Multiserver {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)   // Logger
-  private val ports = List(7000, 7001, 7002)                    // Ports
-  private var hits = Map(7000 -> 0, 7001 -> 0, 7002 -> 0)       // Stats map
+  private val logger = LoggerFactory.getLogger(this.getClass) // Logger
+  private val ports = List(7000, 7001, 7002) // Ports
+  private var hits = Map(7000 -> 0, 7001 -> 0, 7002 -> 0) // Stats map
 
   def main(args: Array[String]): Unit = {
 
@@ -27,25 +26,21 @@ object Multiserver {
     ports.foreach(port =>
       RSocketServer.create(new FFAcceptorImplementation(port))
         .bind(TcpServerTransport.create("0.0.0.0", port))
-        .block
-    )
+        .block)
 
     // Create socket suppliers (clients)
     val rsocketSuppliers = ports.map(port =>
       new RSocketSupplier(() => Mono.just(RSocketConnector
-        .connectWith(TcpClientTransport.create("0.0.0.0", port)).block()))
-    ).asJava
+        .connectWith(TcpClientTransport.create("0.0.0.0", port)).block()))).asJava
 
     // Create load balancer
     val balancer = LoadBalancedRSocketMono.create(Flux.create(
-      (sink: FluxSink[util.Collection[RSocketSupplier]]) => sink.next(rsocketSuppliers)
-    ))
+      (sink: FluxSink[util.Collection[RSocketSupplier]]) => sink.next(rsocketSuppliers)))
 
     // Send messages
-    1 to 300 foreach{_ =>
+    1 to 300 foreach { _ =>
       balancer.doOnNext(
-        socket => socket.fireAndForget(DefaultPayload.create("Hello world")).block()
-      ).block()
+        socket => socket.fireAndForget(DefaultPayload.create("Hello world")).block()).block()
     }
 
     // Wait to make sure that process completes
@@ -57,10 +52,10 @@ object Multiserver {
   }
 
   // Collect sttistics
-  def addHit(port: Int) : Unit = this.synchronized{hits += port -> (hits(port) + 1)}
+  def addHit(port: Int): Unit = this.synchronized { hits += port -> (hits(port) + 1) }
 }
 
-class FFAcceptorImplementation(port : Int) extends SocketAcceptor {
+class FFAcceptorImplementation(port: Int) extends SocketAcceptor {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

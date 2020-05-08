@@ -21,6 +21,6 @@ class RotorspeedWindowLogger extends AkkaStreamlet {
 
           avg
         }
-        .mapContext(_.last) // TODO: this is a tricky one to understand...
+        .mapContext(_.last)
   }
 }

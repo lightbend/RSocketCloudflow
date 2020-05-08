@@ -42,7 +42,8 @@ class RSocketStreamletLogic[Out](server: Server, outlet: CodecOutlet[Out])
 }
 
 class RSocketAcceptorImpl[Out](writer: WritableSinkRef[Out])
-  (implicit fbu: FromByteStringUnmarshaller[Out],
+  (implicit
+    fbu: FromByteStringUnmarshaller[Out],
    ec: ExecutionContext, mat: ActorMaterializer) extends SocketAcceptor {
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
