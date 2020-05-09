@@ -1,12 +1,13 @@
 package com.lightbend.rsocket.examples
 
-import io.rsocket.core.{ RSocketConnector, RSocketServer }
+import io.rsocket.core.{RSocketConnector, RSocketServer}
+import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
 import io.rsocket.util.DefaultPayload
-import io.rsocket.{ AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor }
+import io.rsocket._
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.{ Flux, Mono }
+import reactor.core.publisher.{Flux, Mono}
 
 object FireAndForgetClient {
 
@@ -16,12 +17,15 @@ object FireAndForgetClient {
 
     // Create server
     RSocketServer.create(new EchoSocketAcceptorFF())
+      // Enable Zero Copy
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("localhost", 7000))
       .subscribe
 
     // Create client
     val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("localhost", 7000)).block()
+      .connectWith(TcpClientTransport.create("localhost", 7000))
+      .block()
 
     // Send some messages
     socket.fireAndForget(DefaultPayload.create("Hello world1!")).block

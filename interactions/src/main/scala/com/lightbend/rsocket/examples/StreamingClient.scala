@@ -11,8 +11,7 @@ import io.rsocket.Payload
 import io.rsocket.RSocket
 import io.rsocket.SocketAcceptor
 import io.rsocket.util.DefaultPayload
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import reactor.core.publisher.{Flux, Hooks, Mono}
 import java.time.Duration
 
 object StreamingClient {
@@ -20,6 +19,8 @@ object StreamingClient {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
+    // Ensure clean disposal
+    Hooks.onErrorDropped((t: Throwable) => {})
 
     // Creat a server
     RSocketServer.create(new EchoSocketAcceptorImpl())
@@ -30,14 +31,19 @@ object StreamingClient {
       .connectWith(TcpClientTransport.create("localhost", 7000))
       .block
 
+    // Back preassure
+    val backPressureSubscriber = new BackPressureSubscriber()
+
     // Send messages
     socket
       .requestStream(DefaultPayload.create("Hello"))
       .limitRequest(100)
-      .subscribe(new BackPressureSubscriber())
+      .subscribe(backPressureSubscriber)
 
     // Wait for completion
     Thread.sleep(3000)
+
+    backPressureSubscriber.dispose()
     socket.dispose();
   }
 }
