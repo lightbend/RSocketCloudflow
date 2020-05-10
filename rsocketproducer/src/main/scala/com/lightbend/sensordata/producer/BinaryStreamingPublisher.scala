@@ -35,14 +35,11 @@ class BinaryStreamingPublisher extends AbstractRSocket {
   private val random = new scala.util.Random
   val dataConverter = new DataConverter[SensorData](SensorData.SCHEMA$)
 
-  def getData: Array[Byte] = {
-    val data = new SensorData(UUID.randomUUID(), Instant.ofEpochMilli(System.currentTimeMillis()),
-      new Measurements(random.nextInt(1000) / 10.0, random.nextInt(20000) / 100.0, random.nextInt(2000) / 10.0))
-    dataConverter.toBytes(data)
-  }
-
   override def requestStream(payload: Payload): Flux[Payload] = {
     println(s"Stream Requested: ${payload.getDataUtf8}")
-    Flux.interval(Duration.ofMillis(1000)).map(_ => DefaultPayload.create(getData))
+    Flux.interval(Duration.ofMillis(1000)).map(_ => DefaultPayload.create(
+      dataConverter.toBytes(new SensorData(UUID.randomUUID(), Instant.ofEpochMilli(System.currentTimeMillis()),
+        new Measurements(random.nextInt(1000) / 10.0, random.nextInt(20000) / 100.0, random.nextInt(2000) / 10.0)))
+    ))
   }
 }
