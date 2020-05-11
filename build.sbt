@@ -36,7 +36,7 @@ def sbtdockerAppBase(id: String)(base: String = id): Project = Project(id, base 
     buildOptions in docker := BuildOptions(cache = false)
   )
 
-lazy val rsocketproducer = sbtdockerAppBase("rsocket-data-publisher")("./rsocketproducer")
+lazy val client = sbtdockerAppBase("client")("./client")
   .settings(
     mainClass in Compile := Some("com.lightbend.sensordata.producer.BinaryStreamingPublisher"),
     libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback)

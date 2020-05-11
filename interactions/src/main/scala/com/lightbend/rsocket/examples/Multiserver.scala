@@ -51,7 +51,7 @@ object Multiserver {
     hits.foreach(entry => println(s"Port : ${entry._1} -> count ${entry._2}"))
   }
 
-  // Collect sttistics
+  // Collect statistics
   def addHit(port: Int): Unit = this.synchronized { hits += port -> (hits(port) + 1) }
 }
 
