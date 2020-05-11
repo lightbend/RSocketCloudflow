@@ -34,11 +34,11 @@ object ChannelEchoClient {
     socket
       .requestChannel(
         Flux.interval(Duration.ofMillis(100)).map(_ => {
-          val p = DefaultPayload.create("Hello")
-          logger.info(s"Sending payload: [${p.getDataUtf8}]")
-          p
+          val payLoad = DefaultPayload.create("Hello")
+          logger.info(s"Sending payload: [${payLoad.getDataUtf8}]")
+          payLoad
         }))
-      .subscribe(new BaseSubscriber[Payload]{
+      .subscribe(new BaseSubscriber[Payload] {
         // Back pressure subscriber
         private val log = LoggerFactory.getLogger(this.getClass)
         val NUMBER_OF_REQUESTS_TO_PROCESS = 5l

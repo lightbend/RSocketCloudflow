@@ -1,6 +1,6 @@
 # RSocket Cloudflow Ingress
 
-This is the companion code to the article at [http://TODO](http://TODO)
+This repository is the companion code to the article at [http://TODO](http://TODO)
 
 This project is based on the articles [RSocket Intro](https://www.baeldung.com/rsocket)
 [Reactive Service-to-service](https://dzone.com/articles/reactive-service-to-service-communication-with-rso-1)
@@ -29,14 +29,14 @@ The examples here are:
 
 ## Cloudflow implementation
 
-The idea behind implementation is to replace HTTP Ingress from the original implementation with the RSocket ingress.
+The idea behind the implementation is to replace HTTP Ingress from the original implementation with the RSocket ingress.
 Three different ingress implementations are provided:
 * Fire and forget JSON based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/RSocketIngress.scala).
-Here Rsocket `fire and forget` interactions are used and sensor data is passed as text JSON.
+Here Rsocket `fire and forget` interactions are used, and sensor data is passed as text JSON.
 * Fire and forget Avro based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/RSocketBinaryIngress.scala).
-Here Rsocket `fire and forget` interactions are used and sensor data is passed as Avro encoded binary.
+Here Rsocket `fire and forget` interactions are used, and sensor data is passed as Avro encoded binary.
 * Stream Avro based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/RSocketStreamIngress.scala).
-Here Rsocket `request-stream` interactions are used and sensor data is passed as Avro encoded binary. 
+Here Rsocket `request-stream` interactions are used, and sensor data is passed as Avro encoded binary. 
 
 Any of the implementations can be used. To pick the one that you want to use, go to [blueprint](sensordata/src/main/blueprint/blueprint.conf)
 and uncomment the one that you want to experiment with.
@@ -59,8 +59,8 @@ To run locally:
   * Select the option corresponding to the option selected in the blueprint
 
 ## Running on GCP
-Note : This example assumes that you already have CloudFlow deployed on GKE, if you are not already familiar with 
-deploying cloud flow to GCP its recomented to complete this 
+Note: This example assumes that you already have CloudFlow deployed on GKE, if you are not already familiar with 
+deploying Cloudflow to GCP it is recommended to complete this 
 [tutorial](https://cloudflow.io/docs/current/get-started/index.html)
 
 
