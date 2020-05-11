@@ -40,32 +40,37 @@ class BinaryStreamAcceptor(writer: WritableSinkRef[SensorData]) extends SocketAc
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] = {
     reactiveSocket
       .requestStream(DefaultPayload.create("Please may I have a stream"))
-      .subscribe(new BaseSubscriber[Payload] {
-        // Backpressure
-        private val log = LoggerFactory.getLogger(this.getClass)
-        // Number of request to get in a batch
-        val NUMBER_OF_REQUESTS_TO_PROCESS = 5l
-        var receivedItems = 0
-        // Invoked on subscription, just specify the batch size
-        override def hookOnSubscribe(subscription: Subscription): Unit = {
-          subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
-        }
-        // Invoked on next incoming request
-        override def hookOnNext(value: Payload): Unit = {
-          // Process request
-          SensorDataConverter(value.getData).map(writer.write)
-          // Ask for the next batch
-          receivedItems += 1
-          if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0)
-            request(NUMBER_OF_REQUESTS_TO_PROCESS)
-        }
-        // Invoked on stream completion
-        override def hookOnComplete(): Unit = log.info("Completing subscription")
-        // Invoked on stream error
-        override def hookOnError(throwable: Throwable): Unit = log.error(s"Stream subscription error [$throwable]")
-        // Invoked on stream cancelation
-        override def hookOnCancel(): Unit = log.info("Subscription canceled")
-      })
+      .subscribe(new BinaryStreamBackpressureSubscriber(writer))
     Mono.empty()
   }
+}
+
+class BinaryStreamBackpressureSubscriber(writer: WritableSinkRef[SensorData]) extends BaseSubscriber[Payload] {
+  private val log = LoggerFactory.getLogger(this.getClass)
+  val NUMBER_OF_REQUESTS_TO_PROCESS: Long = 5
+  var receivedItems = 0
+
+  // Invoked on subscription, just specify the batch size
+  override def hookOnSubscribe(subscription: Subscription): Unit = {
+    subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
+  }
+
+  // Invoked on next incoming request
+  override def hookOnNext(value: Payload): Unit = {
+    // Process request
+    SensorDataConverter(value.getData).map(writer.write)
+    // Ask for the next batch
+    receivedItems += 1
+    if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0)
+      request(NUMBER_OF_REQUESTS_TO_PROCESS)
+  }
+
+  // Invoked on stream completion
+  override def hookOnComplete(): Unit = log.info("Completing subscription")
+
+  // Invoked on stream error
+  override def hookOnError(throwable: Throwable): Unit = log.error(s"Stream subscription error [$throwable]")
+
+  // Invoked on stream cancelation
+  override def hookOnCancel(): Unit = log.info("Subscription canceled")
 }
