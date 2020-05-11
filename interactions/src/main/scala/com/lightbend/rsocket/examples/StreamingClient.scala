@@ -50,11 +50,11 @@ object StreamingClient {
           log.info(s"New stream element ${value.getDataUtf8}")
           receivedItems += 1
           if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0) {
-            log.info(s"SERVER : Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")
+            log.info(s"Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")
             val sleepUntil = System.currentTimeMillis() + 1000 * 60 * 1
             while (System.currentTimeMillis() < sleepUntil) {
               Thread.sleep(1000)
-              println(s"SERVER : Sleeping ${(sleepUntil - System.currentTimeMillis()) / 1000.0} seconds left")
+              println(s"Sleeping ${(sleepUntil - System.currentTimeMillis()) / 1000.0} seconds left")
             }
             request(NUMBER_OF_REQUESTS_TO_PROCESS)
           }
