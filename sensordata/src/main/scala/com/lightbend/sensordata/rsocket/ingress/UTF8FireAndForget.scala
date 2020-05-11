@@ -23,27 +23,27 @@ class UTF8FireAndForget extends AkkaServerStreamlet with SprayJsonSupport {
   def shape = StreamletShape.withOutlets(out)
 
   // Create logic
-  override def createLogic() = new UTF8FireAndForgetStreamletLogic[SensorData](this, out)
+  override def createLogic() = new UTF8FireAndForgetStreamletLogic(this, out)
 }
 
 // Logic definition
-class UTF8FireAndForgetStreamletLogic[Out](server: Server, outlet: CodecOutlet[Out])
-  (implicit context: AkkaStreamletContext, fbu: FromByteStringUnmarshaller[Out]) extends ServerStreamletLogic(server) {
+class UTF8FireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[SensorData])
+  (implicit context: AkkaStreamletContext, fbu: FromByteStringUnmarshaller[SensorData]) extends ServerStreamletLogic(server) {
 
   implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
 
   override def run(): Unit = {
     // Start server
-    RSocketServer.create(new UTF8FireAndForgetAcceptor[Out](sinkRef(outlet)))
+    RSocketServer.create(new UTF8FireAndForgetAcceptor(sinkRef(outlet)))
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
     println(s"Bound RSocket server to port $containerPort")
   }
 }
 
-class UTF8FireAndForgetAcceptor[Out](writer: WritableSinkRef[Out])
+class UTF8FireAndForgetAcceptor(writer: WritableSinkRef[SensorData])
   (implicit
-    fbu: FromByteStringUnmarshaller[Out],
+    fbu: FromByteStringUnmarshaller[SensorData],
    ec: ExecutionContext, mat: ActorMaterializer) extends SocketAcceptor {
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
