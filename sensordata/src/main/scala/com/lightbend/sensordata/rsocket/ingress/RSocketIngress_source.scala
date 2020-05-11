@@ -1,4 +1,4 @@
-package com.lightbend.sensordata
+package com.lightbend.sensordata.rsocket.ingress
 
 import akka.stream._
 import akka.stream.stage._

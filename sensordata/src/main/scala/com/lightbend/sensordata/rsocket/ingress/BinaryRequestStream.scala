@@ -1,45 +1,41 @@
-package com.lightbend.sensordata
+package com.lightbend.sensordata.rsocket.ingress
 
 import cloudflow.akkastream._
 import cloudflow.examples.sensordata.rsocket.avro.SensorData
-import cloudflow.streamlets.{ CodecOutlet, StreamletShape }
 import cloudflow.streamlets.avro.AvroOutlet
-import com.lightbend.sensordata.support.DataConverter
+import cloudflow.streamlets.{ CodecOutlet, StreamletShape }
+import com.lightbend.sensordata.support.{ SensorDataConverter }
 import io.rsocket._
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server._
 import io.rsocket.util.DefaultPayload
-import org.apache.avro.Schema
-import org.apache.avro.specific.SpecificRecordBase
+
 import org.reactivestreams.Subscription
 import org.slf4j.LoggerFactory
 import reactor.core.publisher._
 
-class RSocketStreamIngress extends AkkaServerStreamlet {
+class BinaryRequestStream extends AkkaServerStreamlet {
 
   val out = AvroOutlet[SensorData]("out")
 
   def shape = StreamletShape.withOutlets(out)
 
-  override def createLogic() = new RSocketStreamRequestLogic(this, SensorData.SCHEMA$, out)
+  override def createLogic() = new RSocketStreamRequestLogic(this, out)
 }
 
-class RSocketStreamRequestLogic[out <: SpecificRecordBase](server: Server, schema: Schema, outlet: CodecOutlet[out])
+class RSocketStreamRequestLogic(server: Server, outlet: CodecOutlet[SensorData])
   (implicit context: AkkaStreamletContext) extends ServerStreamletLogic(server) {
 
   override def run(): Unit = {
     RSocketServer
-      .create(new RSocketBinaryStreamAcceptorImpl(sinkRef(outlet), schema))
+      .create(new BinaryStreamAcceptor(sinkRef(outlet)))
       .bind(WebsocketServerTransport.create("0.0.0.0", containerPort))
       .block()
     println(s"Bound RSocket server to port $containerPort")
   }
 }
 
-class RSocketBinaryStreamAcceptorImpl[out <: SpecificRecordBase](writer: WritableSinkRef[out], schema: Schema) extends SocketAcceptor {
-
-  // Data converter
-  val dataConverter = new DataConverter[out](schema)
+class BinaryStreamAcceptor(writer: WritableSinkRef[SensorData]) extends SocketAcceptor {
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] = {
     reactiveSocket
@@ -57,7 +53,7 @@ class RSocketBinaryStreamAcceptorImpl[out <: SpecificRecordBase](writer: Writabl
         // Invoked on next incoming request
         override def hookOnNext(value: Payload): Unit = {
           // Process request
-          dataConverter.fromByteBuffer(value.getData).map(writer.write)
+          SensorDataConverter(value.getData).map(writer.write)
           // Ask for the next batch
           receivedItems += 1
           if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0)
