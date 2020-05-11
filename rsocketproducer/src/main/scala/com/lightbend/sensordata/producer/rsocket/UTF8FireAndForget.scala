@@ -7,11 +7,9 @@ import io.rsocket.util.DefaultPayload
 
 import scala.util.Random
 
-object UTF8FireAndForget {
+class UTF8FireAndForget {
 
-  val random = new Random() // Random generator
-
-  def main(args: Array[String]): Unit = {
+  def run(): Unit = {
 
     // Create client
     val socket = RSocketConnector

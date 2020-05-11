@@ -5,9 +5,9 @@ import io.rsocket.core.RSocketConnector
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.util.DefaultPayload
 
-object BinaryFireAndForget {
+class BinaryFireAndForget {
 
-  def main(args: Array[String]): Unit = {
+  def run(): Unit = {
 
     // Create client
     val socket = RSocketConnector

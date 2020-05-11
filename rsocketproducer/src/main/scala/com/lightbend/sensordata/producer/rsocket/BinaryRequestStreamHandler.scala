@@ -9,10 +9,9 @@ import io.rsocket.transport.netty.client.WebsocketClientTransport
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.{ Flux, Mono }
 
-object BinaryRequestStream extends App {
+class BinaryRequestStream {
 
-  // Create client
-  val socket = RSocketConnector
+  def run() = RSocketConnector
     .create
     .acceptor(new ClientMessageAcceptor)
     .connect(WebsocketClientTransport.create("0.0.0.0", 3000))
@@ -21,11 +20,11 @@ object BinaryRequestStream extends App {
 
 case class ClientMessageAcceptor() extends SocketAcceptor {
   override def accept(setup: ConnectionSetupPayload, sendingSocket: RSocket): Mono[RSocket] = {
-    Mono.just(new BinaryRequestStream)
+    Mono.just(new BinaryRequestStreamHandler)
   }
 }
 
-class BinaryRequestStream extends AbstractRSocket {
+class BinaryRequestStreamHandler extends AbstractRSocket {
 
   override def requestStream(payload: Payload): Flux[Payload] = {
     Flux.interval(Duration.ofMillis(1000)).map(_ => DefaultPayload.create(generateData))
