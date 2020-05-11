@@ -1,12 +1,12 @@
-package com.lightbend.sensordata
+package com.lightbend.sensordata.rsocket.ingress
 
-import cloudflow.examples.sensordata.rsocket.avro._
 import java.time.Instant
 import java.util.UUID
 
-import scala.util.Try
-
+import cloudflow.examples.sensordata.rsocket.avro._
 import spray.json._
+
+import scala.util.Try
 
 trait UUIDJsonSupport extends DefaultJsonProtocol {
 

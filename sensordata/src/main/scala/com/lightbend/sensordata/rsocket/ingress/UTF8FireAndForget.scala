@@ -14,7 +14,7 @@ import io.rsocket.transport.netty.server.TcpServerTransport
 import reactor.core.publisher._
 
 import scala.concurrent.ExecutionContext
-import com.lightbend.sensordata.SensorDataJsonSupport._
+import SensorDataJsonSupport._
 
 class UTF8FireAndForget extends AkkaServerStreamlet with SprayJsonSupport {
 
