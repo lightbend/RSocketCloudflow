@@ -36,7 +36,6 @@ object StreamingClient {
     // Send messages
     socket
       .requestStream(DefaultPayload.create("Hello"))
-      .limitRequest(100)
       .subscribe(new BaseSubscriber[Payload]{
         // Back pressure subscriber
         private val log = LoggerFactory.getLogger(this.getClass)

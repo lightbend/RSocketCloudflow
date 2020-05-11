@@ -31,6 +31,15 @@ Here we demonstrate usage of fire and forget and and request stream implementati
 Project contains several modules:
 * `images` - contains images for this Readme
 * `interactions` - initial experimentations with RSockets, based on this [code](https://github.com/b3rnoulli/rsocket-examples).
+The examples here are:
+    * [Fire and forget](interactions/src/main/scala/com/lightbend/rsocket/examples/FireAndForgetClient.scala) 
+    demonstrates implementation of a simple fire and forget implementation
+    * [Load balanced Fire and forget](interactions/src/main/scala/com/lightbend/rsocket/examples/Multiserver.scala) 
+    demonstrates implementation of a loadbalancer for fire and forget implementation
+    * [Request-stream](interactions/src/main/scala/com/lightbend/rsocket/examples/StreamingClient.scala) 
+    demonstrates implementation of a back preasuured request stream implementation
+    * [Channel](interactions/src/main/scala/com/lightbend/rsocket/examples/ChannelEchoClient.scala) 
+    demonstrates implementation of a back preasuured channel implementation
 * `support` is a shared project containing Avro definitions and shared transformation code
 * `sensordata` is a cloudflow implementation for the [Sensor data Processing](https://cloudflow.io/docs/current/get-started/hello-world-example.html)
 * `rsocketproducer` is an implementation of rsocket-based data provider for publishing sensor data.
