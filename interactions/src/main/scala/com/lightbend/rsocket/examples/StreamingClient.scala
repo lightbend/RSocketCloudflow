@@ -11,7 +11,7 @@ import io.rsocket.Payload
 import io.rsocket.RSocket
 import io.rsocket.SocketAcceptor
 import io.rsocket.util.DefaultPayload
-import reactor.core.publisher.{BaseSubscriber, Flux, Hooks, Mono}
+import reactor.core.publisher.{ BaseSubscriber, Flux, Hooks, Mono }
 import java.time.Duration
 
 import org.reactivestreams.Subscription
@@ -36,7 +36,7 @@ object StreamingClient {
     // Send messages
     socket
       .requestStream(DefaultPayload.create("Hello"))
-      .subscribe(new BaseSubscriber[Payload]{
+      .subscribe(new BaseSubscriber[Payload] {
         // Back pressure subscriber
         private val log = LoggerFactory.getLogger(this.getClass)
         val NUMBER_OF_REQUESTS_TO_PROCESS = 5l

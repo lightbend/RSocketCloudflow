@@ -1,17 +1,13 @@
 package com.lightbend.sensordata.producer.rsocket
 
-import com.lightbend.sensordata.support.SensorDataGenerator
+import com.lightbend.sensordata.support.{ SensorDataConverter, SensorDataGenerator }
 import io.rsocket.core.RSocketConnector
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.util.DefaultPayload
 
-import scala.util.Random
+class BinaryFireAndForget {
 
-object UTF8FireAndForget {
-
-  val random = new Random() // Random generator
-
-  def main(args: Array[String]): Unit = {
+  def run(): Unit = {
 
     // Create client
     val socket = RSocketConnector
@@ -21,9 +17,13 @@ object UTF8FireAndForget {
     // Send messages
     while (true) {
       Thread.sleep(1000)
-      val payload = DefaultPayload.create(SensorDataGenerator.randomJsonString.toString)
+      val payload = DefaultPayload.create(generateData())
       socket.fireAndForget(payload).block
     }
   }
 
+  // Generate data
+  def generateData(): Array[Byte] = {
+    SensorDataConverter.toBytes(SensorDataGenerator.random())
+  }
 }

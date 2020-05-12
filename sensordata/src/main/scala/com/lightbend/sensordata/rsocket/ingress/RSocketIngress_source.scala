@@ -16,6 +16,7 @@ import reactor.core.publisher._
 
 import scala.collection.mutable._
 
+//TODO Remove before going public
 class RSocketIngressSource extends AkkaServerStreamlet {
 
   val out: AvroOutlet[SensorData] = AvroOutlet[SensorData]("out").withPartitioner(RoundRobinPartitioner)
