@@ -1,4 +1,4 @@
-package com.lightbend.sensordata.support
+package com.lightbend.rsocket.dataconversion
 
 import java.time.Instant
 import java.util.UUID

@@ -1,14 +1,13 @@
 package com.lightbend.sensordata.rsocket.ingress
 
-import cloudflow.akkastream.{ Server, _ }
+import cloudflow.akkastream.{Server, _}
 import cloudflow.examples.sensordata.rsocket.avro._
 import cloudflow.streamlets._
 import cloudflow.streamlets.avro._
-import com.lightbend.sensordata.support.{ SensorDataConverter }
+import com.lightbend.rsocket.dataconversion.SensorDataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server.TcpServerTransport
-
 import reactor.core.publisher._
 
 class BinaryFireAndForget extends AkkaServerStreamlet {

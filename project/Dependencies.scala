@@ -11,6 +11,8 @@ object Dependencies {
 
   val marshallers           = "com.typesafe.akka"       %% "akka-http-spray-json"               % marshallersVersion
 
+  val akkastream            = "com.typesafe.akka"       %% "akka-stream"                        % akkaVersion
+
   val scalaTest             = "org.scalatest"           %% "scalatest"                          % scaltestVersion    % "test"
 
 }

@@ -39,19 +39,38 @@ def sbtdockerAppBase(id: String)(base: String = id): Project = Project(id, base 
 lazy val client = sbtdockerAppBase("client")("./client")
   .settings(
     mainClass in Compile := Some("com.lightbend.sensordata.producer.BinaryStreamingPublisher"),
-    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback)
-  )
+    libraryDependencies ++= Seq(rsocketBalancer)
+)
   .dependsOn(support)
 
 lazy val interactions = (project in file("./interactions"))
-  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback))
+  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback),
+    dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-codec-http" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-common" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-handler" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-resolver" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport-native-epoll" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport-native-unix-common" % "4.1.49.Final"
+  )
 
 lazy val support = (project in file("./support"))
   .enablePlugins(CloudflowAkkaStreamsLibraryPlugin)
   .settings(
     name := "support",
     version := thisVersion,
-    libraryDependencies ++= Seq(logback, scalaTest),
+    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, akkastream, slf4, logback, scalaTest),
+    dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-codec-http" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-common" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-handler" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-resolver" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport-native-epoll" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport-native-unix-common" % "4.1.49.Final"
   )
   .settings(commonSettings)
 
@@ -60,7 +79,7 @@ lazy val sensorData = (project in file("./sensordata"))
   .settings(
     name := "sensordata",
     version := thisVersion,
-    libraryDependencies ++= Seq(marshallers, rsocketCore, rsocketTransport, slf4, logback)
+    libraryDependencies ++= Seq(marshallers)
   )
   .settings(commonSettings)
   .dependsOn(support)

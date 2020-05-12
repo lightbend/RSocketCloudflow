@@ -15,10 +15,12 @@
 
 object Versions {
 
-  val RSocketVersion        = "1.0.0-RC7"
+  val RSocketVersion        = "1.0.0"
   val SLFVersion            = "1.7.25"
   val LogBackVersion        = "1.2.3"
   val marshallersVersion    = "10.1.11"
+
+  val akkaVersion           = "2.5.29"
 
   val scaltestVersion       = "3.0.5"
 }

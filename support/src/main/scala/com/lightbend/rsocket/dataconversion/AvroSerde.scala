@@ -1,4 +1,4 @@
-package com.lightbend.sensordata.support
+package com.lightbend.rsocket.dataconversion
 
 import cloudflow.streamlets.DecodeException
 import com.twitter.bijection.Injection

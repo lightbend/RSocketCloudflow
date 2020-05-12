@@ -2,12 +2,12 @@ package com.lightbend.sensordata.producer.rsocket
 
 import java.time._
 
-import com.lightbend.sensordata.support.{ SensorDataConverter, SensorDataGenerator }
+import com.lightbend.rsocket.dataconversion.{SensorDataConverter, SensorDataGenerator}
 import io.rsocket._
 import io.rsocket.core.RSocketConnector
 import io.rsocket.transport.netty.client.WebsocketClientTransport
 import io.rsocket.util.DefaultPayload
-import reactor.core.publisher.{ Flux, Mono }
+import reactor.core.publisher.{Flux, Mono}
 
 class BinaryRequestStream {
 

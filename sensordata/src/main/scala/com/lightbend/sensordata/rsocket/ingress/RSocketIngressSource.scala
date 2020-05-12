@@ -1,15 +1,12 @@
 package com.lightbend.sensordata.rsocket.ingress
 
-import akka.stream._
-import akka.stream.stage._
 import cloudflow.akkastream._
 import cloudflow.examples.sensordata.rsocket.avro._
 import cloudflow.streamlets._
 import cloudflow.streamlets.avro._
-import com.lightbend.sensordata.support.DataConverter
 import io.rsocket._
-import io.rsocket.core.RSocketServer
-import io.rsocket.transport.netty.server.TcpServerTransport
+import com.lightbend.rsocket.akka._
+import com.lightbend.rsocket.dataconversion.DataConverter
 import org.apache.avro.Schema
 import org.apache.avro.specific.SpecificRecordBase
 import reactor.core.publisher._
@@ -38,41 +35,17 @@ class RSocketSourceStreamletLogic[out <: SpecificRecordBase]
   override def run(): Unit = {
 
     // Process flow
-    akka.stream.scaladsl.Source.fromGraph(new RSocketSource(acceptor)).collect { case (Some(data)) ⇒ data }
+    akka.stream.scaladsl.Source.fromGraph(new RSocketSource(containerPort, acceptor)).collect { case (Some(data)) ⇒ data }
       .map(dataConverter.fromBytes(_)).collect { case (Some(data)) ⇒ data }.runWith(plainSink(outlet))
-    // Start server
-    RSocketServer.create(acceptor)
-      .bind(TcpServerTransport.create("0.0.0.0", containerPort))
-      .subscribe
-    println(s"Bound RSocket server to port $containerPort")
-
+    ()
   }
 }
 
-class RSocketSource(acceptor: RSocketSourceAcceptorImpl) extends GraphStage[SourceShape[Option[Array[Byte]]]] {
-
-  // the outlet port of this stage which produces Ints
-  val out: akka.stream.Outlet[Option[Array[Byte]]] = Outlet("RsocketSource")
-
-  override val shape: SourceShape[Option[Array[Byte]]] = SourceShape(out)
-
-  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
-    // create a handler for the outlet
-    setHandler(out, new OutHandler {
-      // when you are asked for data (pulled for data)
-      override def onPull(): Unit = {
-        // emit an element on the outlet, if exists
-        push(out, acceptor.nextSensorData())
-      }
-    })
-  }
-}
-
-class RSocketSourceAcceptorImpl extends SocketAcceptor {
+class RSocketSourceAcceptorImpl extends RSocketSourceAcceptor {
 
   private val data = new Queue[Array[Byte]]()
 
-  def nextSensorData(): Option[Array[Byte]] = this.synchronized {
+  override def nextSensorData(): Option[Array[Byte]] = this.synchronized {
     data.isEmpty match {
       case true ⇒ None
       case _    ⇒ Some(data.dequeue())

@@ -1,6 +1,6 @@
 package com.lightbend.sensordata.producer.rsocket
 
-import com.lightbend.sensordata.support.SensorDataGenerator
+import com.lightbend.rsocket.dataconversion.SensorDataGenerator
 import io.rsocket.core.RSocketConnector
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.util.DefaultPayload
