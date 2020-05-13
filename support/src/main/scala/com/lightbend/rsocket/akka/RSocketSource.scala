@@ -5,12 +5,12 @@ import akka.stream.stage._
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server.TcpServerTransport
 
-class RSocketSource(port: Int, acceptor: RSocketSourceAcceptor) extends GraphStage[SourceShape[Option[Array[Byte]]]] {
+class RSocketSource(port: Int, acceptor: RSocketSourceAcceptor) extends GraphStage[SourceShape[Array[Byte]]] {
 
   // the outlet port of this stage which produces Ints
-  val out: akka.stream.Outlet[Option[Array[Byte]]] = Outlet("RsocketSourceOut")
+  val out: akka.stream.Outlet[Array[Byte]] = Outlet("RsocketSourceOut")
 
-  override val shape: SourceShape[Option[Array[Byte]]] = SourceShape(out)
+  override val shape: SourceShape[Array[Byte]] = SourceShape(out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
 
