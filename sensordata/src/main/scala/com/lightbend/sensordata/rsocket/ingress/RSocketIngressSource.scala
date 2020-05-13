@@ -13,7 +13,6 @@ import org.apache.avro.Schema
 import org.apache.avro.specific.SpecificRecordBase
 import reactor.core.publisher._
 
-
 //TODO Remove before going public
 class RSocketIngressSource extends AkkaServerStreamlet {
 

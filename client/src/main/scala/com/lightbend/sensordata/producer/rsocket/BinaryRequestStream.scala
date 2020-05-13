@@ -9,28 +9,21 @@ import io.rsocket.transport.netty.client.WebsocketClientTransport
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.{ Flux, Mono }
 
-class BinaryRequestStream (host : String, port : Int) {
+class BinaryRequestStream(host: String, port: Int, interval: Long) {
 
   def run() = RSocketConnector
     .create
-    .acceptor(new ClientMessageAcceptor)
+    .acceptor((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
+      Mono.just(new BinaryRequestStreamHandler(interval))
+    })
     .connect(WebsocketClientTransport.create(host, port))
     .block.onClose().block()
 }
 
-case class ClientMessageAcceptor() extends SocketAcceptor {
-  override def accept(setup: ConnectionSetupPayload, sendingSocket: RSocket): Mono[RSocket] = {
-    Mono.just(new BinaryRequestStreamHandler)
-  }
-}
-
-class BinaryRequestStreamHandler extends AbstractRSocket {
+class BinaryRequestStreamHandler(interval: Long) extends RSocket {
 
   override def requestStream(payload: Payload): Flux[Payload] = {
-    Flux.interval(Duration.ofMillis(1000)).map(_ => DefaultPayload.create(generateData))
-  }
-
-  private def generateData: Array[Byte] = {
-    SensorDataConverter.toBytes(SensorDataGenerator.random())
+    Flux.interval(Duration.ofMillis(interval)).map(_ => DefaultPayload.create(
+      SensorDataConverter.toBytes(SensorDataGenerator.random())))
   }
 }

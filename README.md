@@ -56,7 +56,7 @@ To run locally:
 * Start Cloudflow implementation
   * `sbt runLocal`
 * Tail log provided by a previous command
-    * `tail -f /var/log...`
+    * `tail -f ...`
 * Run corresponding data provider.
     * in the [application config](client/src/main/resources/application.conf) set the required client
         * 1 for binary fire and forget producer
@@ -65,27 +65,40 @@ To run locally:
     * Start [Producer runner](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/ProducerRunner.scala) 
 either directly from Intellij (with a corresponding option) or using the following command - `sbt "project client" run`
 
-## Running on GCP
-Note: This example assumes that you already have CloudFlow deployed on GKE, if you are not already familiar with 
-deploying Cloudflow to GCP it is recommended to complete this 
+**Note:** You can also change the data publishing interval (default is 1000ms) by changing `producer.interval` value in [application config](client/src/main/resources/application.conf)
+
+## Running on Kubernetes Cluster
+Note: This example assumes that you already have CloudFlow deployed on a cluster, if you are not already familiar with 
+deploying Cloudflow to a cluster it is recommended to complete this 
 [tutorial](https://cloudflow.io/docs/current/get-started/index.html)
 
 
-To run on GCP (Assuming you have a Cloudflow instance deployed on GCP)
-* Select a server configuration by uncommenting your selection in `sensordata/src/main/blueprint/blueprint.conf`
-*  Edit the file `target.env`
-  * ensure that your `cloudflowDockerRegistry` is correct. Probably similar to `eu.gcr.io`
-  * ensure that your project id is setup for `cloudflowDockerRepository`
+To run on a cluster (Assuming you have a Cloudflow instance deployed on it)
+* Select an application configuration by uncommenting your selection in `sensordata/src/main/blueprint/blueprint.conf`
+* Edit the file `target.env`
+  * ensure that your `cloudflowDockerRegistry` is correct. A simplest way is to use (Docker hub)[https://hub.docker.com/]
 * Publish an image to the docker registry:
-  * First make sure that you have access to the cluster `gcloud container clusters get-credentials <cluster-name>`
-  * Then make sure you have access to the registry `gcloud auth configure-docker`
+  * First make sure that you have access to the cluster. Try to run `kubectl get nodes` to verify this 
   * Then publish `sbt buildAndPublish`
 * Deploy the application to the cluster
-  * Run `kubectl-cloudflow deploy -u oauth2accesstoken eu.gcr.io/<gcloud project id>/sensor-data:2-89ce8a7 -p "$(gcloud auth print-access-token)"`
-  * Check the status with `kubectl get pods -n sensor-data`
+  * Run  `kubectl cloudflow deploy docker.io/lightbend/sensordata:...`
+  * Check the status with `get pods -n sensordata`
+  * You can also go to enterprise console to make sure that the application is installed. You should see
+  the picture similar to this ![Console](images/cloudflow.png). Note that there is no throughtput, because we are not publishing any data 
 * Setup a local proxy to the ingress
   * Find the Pod name for the ingress `kubectl  get pods --all-namespaces | grep sensor-data-rsocket-ingress | awk '{ print $2 }'`
   * Create a proxy `kubectl port-forward <pod name> -n sensor-data 3000:3000`
 * Run corresponding data provider
   * `sbt "project client" run`
   * Select the option corresponding to the option selected in the blueprint
+  
+Instead of setting up local proxy and connecting to the cluster from the local machine, you can also build
+an image containing client and then deploy it to the cluster.
+To do this, first execute the first 4 steps above.  
+* Build client image
+    * Run ` sbt docker` to build an image. This should create an image `lightbend/client:0.1`
+* Push an image to the docker repository. In this example I am using docker hub `docker push lightbend/client:0.1`
+* Deploy it to the cluster 
+    * Validate service name and port by running `kubectl get service -n sensordata`
+    * Update [deployment](install/client.yaml) to set required parameters
+    * Deploy client by running `kubectl apply -f <your project location>install/client.yaml`

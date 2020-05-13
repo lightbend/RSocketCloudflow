@@ -7,7 +7,7 @@ import io.rsocket.util.DefaultPayload
 
 import scala.util.Random
 
-class UTF8FireAndForget (host : String, port : Int) {
+class UTF8FireAndForget(host: String, port: Int, interval: Long) {
 
   def run(): Unit = {
 
@@ -18,8 +18,8 @@ class UTF8FireAndForget (host : String, port : Int) {
 
     // Send messages
     while (true) {
-      Thread.sleep(1000)
-      val payload = DefaultPayload.create(SensorDataGenerator.randomJsonString.toString)
+      Thread.sleep(interval)
+      val payload = DefaultPayload.create(SensorDataGenerator.randomJsonString)
       socket.fireAndForget(payload).block
     }
   }

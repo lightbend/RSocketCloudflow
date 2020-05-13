@@ -1,0 +1,33 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: sensordata
+  name: rsocketpublisher
+  labels:
+    app: rsocketpublisher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rsocketpublisher
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: rsocketpublisher
+      labels:
+        app: rsocketpublisher
+    spec:
+      containers:
+        - name: publisher
+          image: "lightbend/client:0.1"
+          imagePullPolicy: "Always"
+          env:
+            - name: "RSOCKET_HOST"
+              value: "sensordata-rsocket-ingress-service"
+            - name: "RSOCKET_PORT"
+              value: "3000"
+            - name: "PRODUCER_OPTION"
+              value: "3"
+            - name: "PRODUCER_INTERVAL"
+              value: "100"
