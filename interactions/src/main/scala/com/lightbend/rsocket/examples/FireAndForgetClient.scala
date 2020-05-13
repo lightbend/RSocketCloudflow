@@ -16,7 +16,14 @@ object FireAndForgetClient {
   def main(args: Array[String]): Unit = {
 
     // Create server
-    RSocketServer.create(new EchoSocketAcceptorFF())
+    RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
+      Mono.just(new RSocket() {
+        override def fireAndForget(payload: Payload): Mono[Void] = {
+          // Log message
+          logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
+          Mono.empty()
+        }
+      })})
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("localhost", 7000))
@@ -37,18 +44,4 @@ object FireAndForgetClient {
     Thread.sleep(1000)
     socket.dispose();
   }
-}
-
-class EchoSocketAcceptorFF extends SocketAcceptor {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
-  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new AbstractRSocket() {
-      override def fireAndForget(payload: Payload): Mono[Void] = {
-        // Log message
-        logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
-        Mono.empty()
-      }
-    })
 }

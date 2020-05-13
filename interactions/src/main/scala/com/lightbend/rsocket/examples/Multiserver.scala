@@ -24,7 +24,14 @@ object Multiserver {
 
     // Create servers
     ports.foreach(port =>
-      RSocketServer.create(new FFAcceptorImplementation(port))
+      RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
+        Mono.just(new RSocket() {
+          override def fireAndForget(payload: Payload): Mono[Void] = {
+            // Peg request to the server
+            addHit(port)
+            Mono.empty()
+          }
+        })})
         .bind(TcpServerTransport.create("0.0.0.0", port))
         .block)
 
@@ -53,18 +60,4 @@ object Multiserver {
 
   // Collect statistics
   def addHit(port: Int): Unit = this.synchronized { hits += port -> (hits(port) + 1) }
-}
-
-class FFAcceptorImplementation(port: Int) extends SocketAcceptor {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
-  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new AbstractRSocket() {
-      override def fireAndForget(payload: Payload): Mono[Void] = {
-        // Peg request to the server
-        Multiserver.addHit(port)
-        Mono.empty()
-      }
-    })
 }

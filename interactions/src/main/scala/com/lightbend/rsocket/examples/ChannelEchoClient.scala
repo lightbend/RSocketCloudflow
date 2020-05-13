@@ -22,7 +22,18 @@ object ChannelEchoClient {
     Hooks.onErrorDropped((t: Throwable) => {})
 
     // Create server
-    RSocketServer.create(new SocketAcceptorImpl())
+    RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
+      Mono.just(new RSocket() {
+        override def requestChannel(payloads: Publisher[Payload]): Flux[Payload] =
+        // For every request
+          Flux.from(payloads)
+            .map(payload => {
+              // Log request
+              logger.info(s"Received payload: [${payload.getMetadataUtf8}]")
+              // Send reply
+              DefaultPayload.create("Echo: " + payload.getMetadataUtf8)
+            })
+      })})
       .bind(TcpServerTransport.create("localhost", 7000)).block
 
     // Create client
@@ -68,22 +79,4 @@ object ChannelEchoClient {
 
     socket.dispose();
   }
-}
-
-class SocketAcceptorImpl extends SocketAcceptor {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
-  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new AbstractRSocket() {
-      override def requestChannel(payloads: Publisher[Payload]): Flux[Payload] =
-        // For every request
-        Flux.from(payloads)
-          .map(payload => {
-            // Log request
-            logger.info(s"Received payload: [${payload.getMetadataUtf8}]")
-            // Send reply
-            DefaultPayload.create("Echo: " + payload.getMetadataUtf8)
-          })
-    })
 }
