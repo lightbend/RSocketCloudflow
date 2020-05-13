@@ -22,5 +22,8 @@ object Versions {
 
   val akkaVersion           = "2.5.29"
 
+  val TypesafeConfigVersion = "1.3.3"
+  val FicusVersion          = "1.4.5"
+
   val scaltestVersion       = "3.0.5"
 }

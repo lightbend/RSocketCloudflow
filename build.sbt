@@ -61,7 +61,7 @@ lazy val support = (project in file("./support"))
   .settings(
     name := "support",
     version := thisVersion,
-    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, akkastream, slf4, logback, scalaTest),
+    libraryDependencies ++= Seq(rsocketCore, rsocketTransport, akkastream, typesafeConfig, ficus, slf4, logback, scalaTest),
     dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec-http" % "4.1.49.Final",

@@ -56,10 +56,14 @@ To run locally:
 * Start Cloudflow implementation
   * `sbt runLocal`
 * Tail log provided by a previous command
- * `tail -f /var/log...`
-* Run corresponding data provider
-  * Start [Producer runner](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/ProducerRunner.scala) either directly from Intellij or using the following command - `sbt "project client" run`
-  * Select the option corresponding to the option selected in the blueprint
+    * `tail -f /var/log...`
+* Run corresponding data provider.
+    * in the [application config](client/src/main/resources/application.conf) set the required client
+        * 1 for binary fire and forget producer
+        * 2 for UTF8 fire and forget producer
+        * 3 for binary streaming producer
+    * Start [Producer runner](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/ProducerRunner.scala) 
+either directly from Intellij (with a corresponding option) or using the following command - `sbt "project client" run`
 
 ## Running on GCP
 Note: This example assumes that you already have CloudFlow deployed on GKE, if you are not already familiar with 

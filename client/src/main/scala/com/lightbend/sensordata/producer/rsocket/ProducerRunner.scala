@@ -1,23 +1,21 @@
 package com.lightbend.sensordata.producer.rsocket
 
-import scala.io.StdIn
+import com.lightbend.rsocket.configuration.RSocketConfiguration._
 
 object ProducerRunner {
   def main(args: Array[String]): Unit = {
-    print(
-      """
-        |Select an option:
-        |1) Fire and Forget Binary
-        |2) Fire and forget UTF8
-        |3) Request / Stream Binary
-        |
-        |>> """.stripMargin)
 
-    StdIn.readInt() match {
-      case 1 => new BinaryFireAndForget().run()
-      case 2 => new UTF8FireAndForget().run()
-      case 3 => new BinaryRequestStream().run()
-      case _ => System.exit(0)
+    println(s"Running Producer runner for host $RSOCKET_HOST, port $RSOCKET_PORT")
+    PRODUCER_OPTION match {
+      case 1 =>
+        println(s"Running binary fire and forget producer")
+        new BinaryFireAndForget(RSOCKET_HOST, RSOCKET_PORT).run()
+      case 2 =>
+        println(s"Running UTF8 fire and forget producer")
+        new UTF8FireAndForget(RSOCKET_HOST, RSOCKET_PORT).run()
+      case _ =>
+        println(s"Running binary fire and forget producer")
+        new BinaryRequestStream(RSOCKET_HOST, RSOCKET_PORT).run()
     }
   }
 }

@@ -7,13 +7,13 @@ import io.rsocket.util.DefaultPayload
 
 import scala.util.Random
 
-class UTF8FireAndForget {
+class UTF8FireAndForget (host : String, port : Int) {
 
   def run(): Unit = {
 
     // Create client
     val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("0.0.0.0", 3000))
+      .connectWith(TcpClientTransport.create(host, port))
       .block
 
     // Send messages

@@ -9,12 +9,12 @@ import io.rsocket.transport.netty.client.WebsocketClientTransport
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.{ Flux, Mono }
 
-class BinaryRequestStream {
+class BinaryRequestStream (host : String, port : Int) {
 
   def run() = RSocketConnector
     .create
     .acceptor(new ClientMessageAcceptor)
-    .connect(WebsocketClientTransport.create("0.0.0.0", 3000))
+    .connect(WebsocketClientTransport.create(host, port))
     .block.onClose().block()
 }
 
