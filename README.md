@@ -42,9 +42,12 @@ Any of the implementations can be used. To pick the one that you want to use, go
 and uncomment the one that you want to experiment with.
 
 To support these three interactions there are three data publishers:
-* [JSON Fire and forget](rsocketproducer/src/main/scala/com/lightbend/sensordata/producer/RSocketPublisher.scala)
-* [Binary Fire and forget](rsocketproducer/src/main/scala/com/lightbend/sensordata/producer/RSocketPublisherBinary.scala)
-* [Binary Streaming](rsocketproducer/src/main/scala/com/lightbend/sensordata/producer/BinaryStreamingPublisher.scala)
+* [JSON Fire and forget](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/UTF8FireAndForget.scala)
+* [Binary Fire and forget](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/BinaryFireAndForget.scala)
+* [Binary Streaming](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/BinaryRequestStream.scala)
+
+A class [Producer runner](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/ProducerRunner.scala) is provided allowing to 
+pick an individual publisher.
 
 ## Running locally
 
@@ -55,7 +58,7 @@ To run locally:
 * Tail log provided by a previous command
  * `tail -f /var/log...`
 * Run corresponding data provider
-  * `sbt "project client" run`
+  * Start [Producer runner](client/src/main/scala/com/lightbend/sensordata/producer/rsocket/ProducerRunner.scala) either directly from Intellij or using the following command - `sbt "project client" run`
   * Select the option corresponding to the option selected in the blueprint
 
 ## Running on GCP
