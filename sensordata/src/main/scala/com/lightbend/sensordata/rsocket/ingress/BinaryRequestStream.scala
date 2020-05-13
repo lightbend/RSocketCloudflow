@@ -3,7 +3,7 @@ package com.lightbend.sensordata.rsocket.ingress
 import cloudflow.akkastream._
 import cloudflow.examples.sensordata.rsocket.avro.SensorData
 import cloudflow.streamlets.avro.AvroOutlet
-import cloudflow.streamlets.{CodecOutlet, StreamletShape}
+import cloudflow.streamlets.{ CodecOutlet, StreamletShape }
 import com.lightbend.rsocket.dataconversion.SensorDataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer

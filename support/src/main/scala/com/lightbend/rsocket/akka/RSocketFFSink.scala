@@ -7,11 +7,10 @@ import io.rsocket.core._
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.util._
 
-
-class RSocketFFSink(port : Int, host : String = "0.0.0.0") extends GraphStage[SinkShape[Array[Byte]]] {
+class RSocketFFSink(port: Int, host: String = "0.0.0.0") extends GraphStage[SinkShape[Array[Byte]]] {
   // the input port of the Sink which consumes Ints
   val in: Inlet[Array[Byte]] = Inlet("RsocketSinkInput")
-  var socket : RSocket = null
+  var socket: RSocket = null
 
   override def shape: SinkShape[Array[Byte]] = SinkShape(in)
 

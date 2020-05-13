@@ -1,6 +1,6 @@
 package com.lightbend.sensordata.rsocket.ingress
 
-import cloudflow.akkastream.{Server, _}
+import cloudflow.akkastream.{ Server, _ }
 import cloudflow.examples.sensordata.rsocket.avro._
 import cloudflow.streamlets._
 import cloudflow.streamlets.avro._
@@ -35,7 +35,7 @@ class BinaryFireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sens
 class BinaryFireAndForgetAcceptor(writer: WritableSinkRef[SensorData]) extends SocketAcceptor {
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new AbstractRSocket() {
+    Mono.just(new RSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
         // Get message and write to sink
         SensorDataConverter(payload.getData).map(writer.write)

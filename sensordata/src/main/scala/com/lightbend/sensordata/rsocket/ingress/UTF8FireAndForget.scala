@@ -47,7 +47,7 @@ class UTF8FireAndForgetAcceptor(writer: WritableSinkRef[SensorData])
    ec: ExecutionContext, mat: ActorMaterializer) extends SocketAcceptor {
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new AbstractRSocket() {
+    Mono.just(new RSocket() {
       override def fireAndForget(payload: Payload): Mono[Void] = {
         // Get data
         val data = ByteString(payload.getDataUtf8)
