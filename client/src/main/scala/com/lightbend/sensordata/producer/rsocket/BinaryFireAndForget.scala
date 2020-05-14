@@ -1,10 +1,10 @@
 package com.lightbend.sensordata.producer.rsocket
 
-import com.lightbend.rsocket.dataconversion.{SensorDataConverter, SensorDataGenerator}
+import com.lightbend.rsocket.dataconversion.{ SensorDataConverter, SensorDataGenerator }
 import io.rsocket.core.RSocketConnector
 import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.client.TcpClientTransport
-import io.rsocket.util.{ByteBufPayload}
+import io.rsocket.util.ByteBufPayload
 
 class BinaryFireAndForget(host: String, port: Int, interval: Long) {
 
@@ -18,7 +18,7 @@ class BinaryFireAndForget(host: String, port: Int, interval: Long) {
 
     // Send messages
     while (true) {
-      if(interval > 0)
+      if (interval > 0)
         Thread.sleep(interval)
       socket.fireAndForget(ByteBufPayload.create(generateData())).block
     }

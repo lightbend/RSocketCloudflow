@@ -1,13 +1,14 @@
 package com.lightbend.rsocket.examples
 
-import io.rsocket.{ AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor }
+import io.rsocket.{AbstractRSocket, ConnectionSetupPayload, Payload, RSocket, SocketAcceptor}
 import io.rsocket.core.RSocketConnector
 import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
-import io.rsocket.util.DefaultPayload
+import io.rsocket.util.ByteBufPayload
 import java.time._
 
+import io.rsocket.frame.decoder.PayloadDecoder
 import org.reactivestreams._
 import org.slf4j.LoggerFactory
 import reactor.core.publisher._
@@ -29,23 +30,28 @@ object ChannelEchoClient {
           Flux.from(payloads)
             .map(payload => {
               // Log request
-              logger.info(s"Received payload: [${payload.getMetadataUtf8}]")
+              val pdata = payload.getDataUtf8
+              logger.info(s"Received payload: [$pdata]")
               // Send reply
-              DefaultPayload.create("Echo: " + payload.getMetadataUtf8)
+              payload.release()
+              ByteBufPayload.create("Echo: " + pdata)
             })
       })})
-      .bind(TcpServerTransport.create("localhost", 7000)).block
+      // Enable Zero Copy
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
+      .bind(TcpServerTransport.create("0.0.0.0", 7000)).block
 
     // Create client
-    val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("localhost", 7000))
+    val socket = RSocketConnector.create()
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
+      .connect(TcpClientTransport.create("0.0.0.0", 7000))
       .block
 
     // Request/responce
     socket
       .requestChannel(
         Flux.interval(Duration.ofMillis(100)).map(_ => {
-          val payLoad = DefaultPayload.create("Hello")
+          val payLoad = ByteBufPayload.create("Hello")
           logger.info(s"Sending payload: [${payLoad.getDataUtf8}]")
           payLoad
         }))
@@ -61,6 +67,7 @@ object ChannelEchoClient {
         // Processing request
         override def hookOnNext(value: Payload): Unit = {
           log.info(s"New stream element ${value.getDataUtf8}")
+          value.release()
           receivedItems += 1
           if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0) {
             log.info(s"Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")

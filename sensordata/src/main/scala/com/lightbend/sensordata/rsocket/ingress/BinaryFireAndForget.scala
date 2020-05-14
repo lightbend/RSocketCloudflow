@@ -41,6 +41,7 @@ class BinaryFireAndForgetAcceptor(writer: WritableSinkRef[SensorData]) extends S
       override def fireAndForget(payload: Payload): Mono[Void] = {
         // Get message and write to sink
         SensorDataConverter(payload.getData).map(writer.write)
+        payload.release()
         Mono.empty()
       }
     })

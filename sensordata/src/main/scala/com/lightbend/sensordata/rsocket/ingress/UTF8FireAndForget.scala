@@ -55,6 +55,7 @@ class UTF8FireAndForgetAcceptor(writer: WritableSinkRef[SensorData])
         val data = ByteString(payload.getDataUtf8)
         // Convert and publish
         fbu.apply(data).flatMap(writer.write)
+        payload.release()
         Mono.empty()
       }
     })

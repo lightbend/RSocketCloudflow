@@ -58,6 +58,7 @@ class RSocketSourceAcceptorImpl extends RSocketSourceAcceptor {
         buffer.get(data)
         // Queue it for processing
         blockingDeque.add(data)
+        payload.release()
         Mono.empty()
       }
     })

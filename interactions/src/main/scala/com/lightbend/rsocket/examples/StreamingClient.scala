@@ -5,10 +5,9 @@ import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
 import org.slf4j.LoggerFactory
 import io.rsocket._
-import io.rsocket.util.DefaultPayload
+import io.rsocket.frame.decoder.PayloadDecoder
+import io.rsocket.util.ByteBufPayload
 import reactor.core.publisher._
-import java.time.Duration
-
 import org.reactivestreams.Subscription
 
 object StreamingClient {
@@ -25,25 +24,27 @@ object StreamingClient {
             override def requestStream(payload: Payload): Flux[Payload] = {
               // Log request
               logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
+              payload.release()
               // return stream
               return Flux.generate[Payload, Int](() => 0, (state: Int, sink: SynchronousSink[Payload]) => {
                 Thread.sleep(100)
-                sink.next(DefaultPayload.create("Interval: " + state))
+                sink.next(ByteBufPayload.create("Interval: " + state))
                 state + 1
               })
             }
           })
       })
-      .bind(TcpServerTransport.create("localhost", 7000)).subscribe
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
+      .bind(TcpServerTransport.create("0.0.0.0", 7000)).subscribe
 
     // create a client
     val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("localhost", 7000))
+      .connectWith(TcpClientTransport.create("0.0.0.0", 7000))
       .block
 
     // Send messages
     socket
-      .requestStream(DefaultPayload.create("Hello"))
+      .requestStream(ByteBufPayload.create("Hello"))
       .subscribe(new BaseSubscriber[Payload] {
         // Back pressure subscriber
         private val log = LoggerFactory.getLogger(this.getClass)
@@ -56,6 +57,7 @@ object StreamingClient {
         // Processing request
         override def hookOnNext(value: Payload): Unit = {
           log.info(s"New stream element ${value.getDataUtf8}")
+          value.release()
           receivedItems += 1
           if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0) {
             log.info(s"Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")
