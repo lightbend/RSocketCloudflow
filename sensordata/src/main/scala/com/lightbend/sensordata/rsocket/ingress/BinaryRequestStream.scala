@@ -37,10 +37,11 @@ class RSocketStreamRequestLogic(server: Server, outlet: CodecOutlet[SensorData])
 class BinaryStreamAcceptor(writer: WritableSinkRef[SensorData]) extends SocketAcceptor {
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] = {
-    reactiveSocket
-      .requestStream(DefaultPayload.create("Please may I have a stream"))
-      .subscribe(new BinaryStreamBackpressureSubscriber(writer))
-    Mono.empty()
+    Mono.just(new RSocket {}).doFinally((_) ⇒ {
+      reactiveSocket
+        .requestStream(DefaultPayload.create("Please may I have a stream"))
+        .subscribe(new BinaryStreamBackpressureSubscriber(writer))
+    })
   }
 }
 

@@ -19,14 +19,18 @@ object StreamingClient {
     // Ensure clean disposal
     Hooks.onErrorDropped((t: Throwable) => {})
 
-    // Creat a server
+    // Create a server
     RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
       Mono.just(new RSocket() {
             override def requestStream(payload: Payload): Flux[Payload] = {
               // Log request
               logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
               // return stream
-              return Flux.interval(Duration.ofMillis(100)).map(aLong => DefaultPayload.create("Interval: " + aLong))
+              return Flux.generate[Payload, Int](() => 0, (state: Int, sink: SynchronousSink[Payload]) => {
+                Thread.sleep(100)
+                sink.next(DefaultPayload.create("Interval: " + state))
+                state + 1
+              })
             }
           })
       })
