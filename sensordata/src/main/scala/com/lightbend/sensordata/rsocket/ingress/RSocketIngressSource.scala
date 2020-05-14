@@ -45,9 +45,9 @@ class RSocketSourceStreamletLogic[out <: SpecificRecordBase]
 
 class RSocketSourceAcceptorImpl extends RSocketSourceAcceptor {
 
-  private val blockingDeque = new LinkedBlockingDeque[Array[Byte]]()
+  private val blockingQueue = new LinkedBlockingDeque[Array[Byte]]()
 
-  override def nextSensorData(): Array[Byte] = blockingDeque.take()
+  override def nextSensorData(): Array[Byte] = blockingQueue.take()
 
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
     Mono.just(new RSocket() {
@@ -57,7 +57,7 @@ class RSocketSourceAcceptorImpl extends RSocketSourceAcceptor {
         val data = new Array[Byte](buffer.remaining())
         buffer.get(data)
         // Queue it for processing
-        blockingDeque.add(data)
+        blockingQueue.add(data)
         payload.release()
         Mono.empty()
       }

@@ -9,7 +9,7 @@ import io.rsocket._
 import io.rsocket.core.RSocketServer
 import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.server._
-import io.rsocket.util.{ ByteBufPayload, DefaultPayload }
+import io.rsocket.util.ByteBufPayload
 import org.reactivestreams.Subscription
 import org.slf4j.LoggerFactory
 import reactor.core.publisher._

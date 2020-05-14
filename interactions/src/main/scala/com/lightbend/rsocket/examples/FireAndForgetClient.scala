@@ -42,7 +42,7 @@ object FireAndForgetClient {
     socket.fireAndForget(ByteBufPayload.create("Hello world3!")).block
     socket.fireAndForget(ByteBufPayload.create("Hello world4!")).block
 
-    // Wit and complete
+    // Wait and complete
     Thread.sleep(1000)
     socket.dispose();
   }

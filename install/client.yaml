@@ -34,4 +34,4 @@ spec:
             - name: "PRODUCER_OPTION"
               value: "3"
             - name: "PRODUCER_INTERVAL"
-              value: "10"
+              value: "1"

@@ -6,7 +6,6 @@ import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.util.ByteBufPayload
 
-
 class UTF8FireAndForget(host: String, port: Int, interval: Long) {
 
   def run(): Unit = {
