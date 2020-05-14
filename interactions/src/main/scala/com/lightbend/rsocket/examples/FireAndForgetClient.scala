@@ -1,13 +1,13 @@
 package com.lightbend.rsocket.examples
 
-import io.rsocket.core.{ RSocketConnector, RSocketServer }
+import io.rsocket.core.{RSocketConnector, RSocketServer}
 import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
-import io.rsocket.util.DefaultPayload
+import io.rsocket.util.{ByteBufPayload, DefaultPayload}
 import io.rsocket._
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.{ Mono }
+import reactor.core.publisher.Mono
 
 object FireAndForgetClient {
 
@@ -21,6 +21,7 @@ object FireAndForgetClient {
         override def fireAndForget(payload: Payload): Mono[Void] = {
           // Log message
           logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
+          payload.release()
           Mono.empty()
         }
       })})
@@ -30,15 +31,16 @@ object FireAndForgetClient {
       .subscribe
 
     // Create client
-    val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("localhost", 7000))
+    val socket = RSocketConnector.create()
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
+      .connect(TcpClientTransport.create("localhost", 7000))
       .block()
 
     // Send some messages
-    socket.fireAndForget(DefaultPayload.create("Hello world1!")).block
-    socket.fireAndForget(DefaultPayload.create("Hello world2!")).block
-    socket.fireAndForget(DefaultPayload.create("Hello world3!")).block
-    socket.fireAndForget(DefaultPayload.create("Hello world4!")).block
+    socket.fireAndForget(ByteBufPayload.create("Hello world1!")).block
+    socket.fireAndForget(ByteBufPayload.create("Hello world2!")).block
+    socket.fireAndForget(ByteBufPayload.create("Hello world3!")).block
+    socket.fireAndForget(ByteBufPayload.create("Hello world4!")).block
 
     // Wit and complete
     Thread.sleep(1000)

@@ -7,6 +7,7 @@ import cloudflow.streamlets.avro._
 import com.lightbend.rsocket.dataconversion.SensorDataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer
+import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.server.TcpServerTransport
 import reactor.core.publisher._
 
@@ -26,6 +27,7 @@ class BinaryFireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sens
   override def run(): Unit = {
     // Create server
     RSocketServer.create(new BinaryFireAndForgetAcceptor(sinkRef(outlet)))
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
     println(s"Bound RSocket server to port $containerPort")

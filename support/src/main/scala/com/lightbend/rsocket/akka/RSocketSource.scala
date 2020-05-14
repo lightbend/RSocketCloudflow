@@ -3,6 +3,7 @@ package com.lightbend.rsocket.akka
 import akka.stream._
 import akka.stream.stage._
 import io.rsocket.core.RSocketServer
+import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.server.TcpServerTransport
 
 class RSocketSource(port: Int, acceptor: RSocketSourceAcceptor) extends GraphStage[SourceShape[Array[Byte]]] {
@@ -17,6 +18,7 @@ class RSocketSource(port: Int, acceptor: RSocketSourceAcceptor) extends GraphSta
     // Pre start. create server
     override def preStart(): Unit = {
       RSocketServer.create(acceptor)
+        .payloadDecoder(PayloadDecoder.ZERO_COPY)
         .bind(TcpServerTransport.create("0.0.0.0", port))
         .subscribe
       println(s"Bound RSocket server to port $port")

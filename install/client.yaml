@@ -22,12 +22,16 @@ spec:
         - name: publisher
           image: "lightbend/client:0.1"
           imagePullPolicy: "Always"
+          ports:
+            - containerPort: 3000
+              name: rsocket
+              protocol: TCP
           env:
             - name: "RSOCKET_HOST"
               value: "sensordata-rsocket-ingress-service"
             - name: "RSOCKET_PORT"
               value: "3000"
             - name: "PRODUCER_OPTION"
-              value: "3"
+              value: "1"
             - name: "PRODUCER_INTERVAL"
-              value: "100"
+              value: "10"

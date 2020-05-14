@@ -7,8 +7,9 @@ import cloudflow.streamlets.{ CodecOutlet, StreamletShape }
 import com.lightbend.rsocket.dataconversion.SensorDataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer
+import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.server._
-import io.rsocket.util.DefaultPayload
+import io.rsocket.util.{ ByteBufPayload, DefaultPayload }
 import org.reactivestreams.Subscription
 import org.slf4j.LoggerFactory
 import reactor.core.publisher._
@@ -28,6 +29,7 @@ class RSocketStreamRequestLogic(server: Server, outlet: CodecOutlet[SensorData])
   override def run(): Unit = {
     RSocketServer
       .create(new BinaryStreamAcceptor(sinkRef(outlet)))
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(WebsocketServerTransport.create("0.0.0.0", containerPort))
       .block()
     println(s"Bound RSocket server to port $containerPort")
@@ -39,7 +41,7 @@ class BinaryStreamAcceptor(writer: WritableSinkRef[SensorData]) extends SocketAc
   override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] = {
     Mono.just(new RSocket {}).doFinally((_) ⇒ {
       reactiveSocket
-        .requestStream(DefaultPayload.create("Please may I have a stream"))
+        .requestStream(ByteBufPayload.create("Please may I have a stream"))
         .subscribe(new BinaryStreamBackpressureSubscriber(writer))
     })
   }
@@ -59,6 +61,7 @@ class BinaryStreamBackpressureSubscriber(writer: WritableSinkRef[SensorData]) ex
   override def hookOnNext(value: Payload): Unit = {
     // Process request
     SensorDataConverter(value.getData).map(writer.write)
+    value.release()
     // Ask for the next batch
     receivedItems += 1
     if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0)

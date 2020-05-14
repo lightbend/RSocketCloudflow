@@ -15,6 +15,7 @@ import reactor.core.publisher._
 
 import scala.concurrent.ExecutionContext
 import SensorDataJsonSupport._
+import io.rsocket.frame.decoder.PayloadDecoder
 
 class UTF8FireAndForget extends AkkaServerStreamlet with SprayJsonSupport {
 
@@ -35,6 +36,7 @@ class UTF8FireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sensor
   override def run(): Unit = {
     // Start server
     RSocketServer.create(new UTF8FireAndForgetAcceptor(sinkRef(outlet)))
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
     println(s"Bound RSocket server to port $containerPort")
