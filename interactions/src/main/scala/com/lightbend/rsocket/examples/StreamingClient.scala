@@ -19,21 +19,17 @@ object StreamingClient {
     Hooks.onErrorDropped((t: Throwable) => {})
 
     // Create a server
-    RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
-      Mono.just(new RSocket() {
-            override def requestStream(payload: Payload): Flux[Payload] = {
-              // Log request
-              logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
-              payload.release()
-              // return stream
-              return Flux.generate[Payload, Int](() => 0, (state: Int, sink: SynchronousSink[Payload]) => {
-                Thread.sleep(100)
-                sink.next(ByteBufPayload.create("Interval: " + state))
-                state + 1
-              })
-            }
-          })
-      })
+    RSocketServer.create(SocketAcceptor.forRequestStream((payload: Payload) => {
+        // Log request
+        logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
+        payload.release()
+        // return stream
+        Flux.generate[Payload, Int](() => 0, (state: Int, sink: SynchronousSink[Payload]) => {
+          Thread.sleep(100)
+          sink.next(ByteBufPayload.create("Interval: " + state))
+          state + 1
+        })
+      }))
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", 7000)).subscribe
 
@@ -50,7 +46,7 @@ object StreamingClient {
         private val log = LoggerFactory.getLogger(this.getClass)
         val NUMBER_OF_REQUESTS_TO_PROCESS = 5l
         var receivedItems = 0
-        // Start subscribtion
+        // Start subscription
         override def hookOnSubscribe(subscription: Subscription): Unit = {
           subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
         }

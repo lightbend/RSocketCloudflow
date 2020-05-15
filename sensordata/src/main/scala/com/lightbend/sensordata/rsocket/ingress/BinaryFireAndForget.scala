@@ -25,24 +25,17 @@ class BinaryFireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sens
   (implicit context: AkkaStreamletContext) extends ServerStreamletLogic(server) {
 
   override def run(): Unit = {
+    val writer = sinkRef(outlet)
     // Create server
-    RSocketServer.create(new BinaryFireAndForgetAcceptor(sinkRef(outlet)))
+    RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) =>{
+        // Get message and write to sink
+        SensorDataConverter(payload.getData).map(writer.write)
+        payload.release()
+        Mono.empty()
+      }))
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
     println(s"Bound RSocket server to port $containerPort")
   }
-}
-
-class BinaryFireAndForgetAcceptor(writer: WritableSinkRef[SensorData]) extends SocketAcceptor {
-
-  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new RSocket() {
-      override def fireAndForget(payload: Payload): Mono[Void] = {
-        // Get message and write to sink
-        SensorDataConverter(payload.getData).map(writer.write)
-        payload.release()
-        Mono.empty()
-      }
-    })
 }

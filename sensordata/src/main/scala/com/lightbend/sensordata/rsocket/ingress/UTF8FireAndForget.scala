@@ -13,7 +13,6 @@ import io.rsocket.core.RSocketServer
 import io.rsocket.transport.netty.server.TcpServerTransport
 import reactor.core.publisher._
 
-import scala.concurrent.ExecutionContext
 import SensorDataJsonSupport._
 import io.rsocket.frame.decoder.PayloadDecoder
 
@@ -34,29 +33,19 @@ class UTF8FireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sensor
   implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
 
   override def run(): Unit = {
-    // Start server
-    RSocketServer.create(new UTF8FireAndForgetAcceptor(sinkRef(outlet)))
-      .payloadDecoder(PayloadDecoder.ZERO_COPY)
-      .bind(TcpServerTransport.create("0.0.0.0", containerPort))
-      .subscribe
-    println(s"Bound RSocket server to port $containerPort")
-  }
-}
-
-class UTF8FireAndForgetAcceptor(writer: WritableSinkRef[SensorData])
-  (implicit
-    fbu: FromByteStringUnmarshaller[SensorData],
-   ec: ExecutionContext, mat: ActorMaterializer) extends SocketAcceptor {
-
-  override def accept(setupPayload: ConnectionSetupPayload, reactiveSocket: RSocket): Mono[RSocket] =
-    Mono.just(new RSocket() {
-      override def fireAndForget(payload: Payload): Mono[Void] = {
+    val writer = sinkRef(outlet)
+    // Create server
+    RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) =>{
         // Get data
         val data = ByteString(payload.getDataUtf8)
         // Convert and publish
         fbu.apply(data).flatMap(writer.write)
         payload.release()
         Mono.empty()
-      }
-    })
+      }))
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
+      .bind(TcpServerTransport.create("0.0.0.0", containerPort))
+      .subscribe
+    println(s"Bound RSocket server to port $containerPort")
+  }
 }

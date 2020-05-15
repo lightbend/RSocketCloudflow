@@ -25,15 +25,13 @@ object FireAndForgetWithLeaseClient {
   def main(args: Array[String]): Unit = {
 
     // Create server
-    val server = RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
-      Mono.just(new RSocket() {
-        override def fireAndForget(payload: Payload): Mono[Void] = {
-          // Log message
-          blockingQueue.add(payload.getDataUtf8)
-          payload.release()
-          Mono.empty()
-        }})})
-      .lease(() => Leases.create().sender(new LeaseCalculator(SERVER_TAG, blockingQueue)))
+    val server = RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) => {
+        // Log message
+        blockingQueue.add(payload.getDataUtf8)
+        payload.release()
+        Mono.empty()
+      }))
+      .lease(new Supplier[Leases[_]] {override def get(): Leases[_] = Leases.create().sender(new LeaseCalculator(SERVER_TAG, blockingQueue))})
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bindNow(TcpServerTransport.create("0.0.0.0", 7000))
@@ -43,7 +41,7 @@ object FireAndForgetWithLeaseClient {
 
     // Create client
     val clientRSocket = RSocketConnector.create
-      .lease(() => Leases.create.receiver(receiver))
+      .lease(new Supplier[Leases[_]] {override def get(): Leases[_] = Leases.create.receiver(receiver)})
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .connect(TcpClientTransport.create(server.address)).block
@@ -60,24 +58,21 @@ object FireAndForgetWithLeaseClient {
         state + 1
     })
       // Wait for the  Lease arrival
-      .delaySubscription(receiver.notifyWhenNewLease().then())
+      .delaySubscription(receiver.notifyWhenNewLease().`then`())
       .concatMap((tick : Long) => {
           println(s"Sending $tick")
-          clientRSocket
-            .fireAndForget(ByteBufPayload.create(s"New tick = $tick"))
+          Mono.defer(() => clientRSocket.fireAndForget(ByteBufPayload.create("" + tick)))
             .retryWhen(
               Retry.indefinitely()
                 .filter((t : Throwable) => t.isInstanceOf[MissingLeaseException])
                 .doBeforeRetryAsync(rs => {
                   println("Ran out of leases")
-                  receiver.notifyWhenNewLease().then()
+                  receiver.notifyWhenNewLease().`then`()
                 }))
         }
       )
-      .blockLast();
+      .blockLast()
 
-    // Wait and complete
-    Thread.sleep(2000)
     clientRSocket.onClose.block
     server.dispose()
   }
@@ -97,7 +92,7 @@ class LeaseCalculator(tag : String, queue : LinkedBlockingDeque[String]) extends
     }
     println(s"$tag stats are $stats")
 
-    Flux.interval(Duration.ZERO, leaseDuration)
+    Flux.interval(leaseDuration)
       .handle((_, sink : SynchronousSink[Lease]) => {
         (maxQueueDepth - queue.size()) match {
           case requests if (requests > 0) => sink.next(Lease.create(leaseDuration.toMillis.toInt, requests))
@@ -107,18 +102,22 @@ class LeaseCalculator(tag : String, queue : LinkedBlockingDeque[String]) extends
   }
 }
 
-// Lease reciever handler
+// Lease receiver handler
 class LeaseReceiver(tag : String) extends Consumer[Flux[Lease]] {
 
-  val direct : DirectProcessor[Lease] = DirectProcessor.create()
+  val lastLeaseReplay: ReplayProcessor[Lease] = ReplayProcessor.cacheLast[Lease]
 
-  override def accept(receivedLeases: Flux[Lease]): Unit = {
+  override def accept(receivedLeases: Flux[Lease]): Unit = this.synchronized{
     receivedLeases
       .subscribe((l:Lease) => {
-          direct.onNext(l);
-          println(s"$tag received leases - ttl: ${l.getTimeToLiveMillis()}, requests: ${l.getAllowedRequests()}")
-        });
+        println(s"$tag received leases - ttl: ${l.getTimeToLiveMillis()}, requests: ${l.getAllowedRequests()}")
+        lastLeaseReplay.onNext(l)
+      })
   }
 
-  def notifyWhenNewLease(): Mono[Lease] = direct.next
+  def notifyWhenNewLease(): Mono[Lease] = {
+    val lease = lastLeaseReplay.filter(l => l.isValid()).next()
+    println(s"Returning an available lease $lease")
+    lease
+  }
 }
