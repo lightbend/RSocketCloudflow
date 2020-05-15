@@ -25,14 +25,12 @@ object FireAndForgetWithLeaseClient {
   def main(args: Array[String]): Unit = {
 
     // Create server
-    val server = RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
-      Mono.just(new RSocket() {
-        override def fireAndForget(payload: Payload): Mono[Void] = {
-          // Log message
-          blockingQueue.add(payload.getDataUtf8)
-          payload.release()
-          Mono.empty()
-        }})})
+    val server = RSocketServer.create(SocketAcceptor.forFireAndForget(payload => {
+        // Log message
+        blockingQueue.add(payload.getDataUtf8)
+        payload.release()
+        Mono.empty()
+      }))
       .lease(() => Leases.create().sender(new LeaseCalculator(SERVER_TAG, blockingQueue)))
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)

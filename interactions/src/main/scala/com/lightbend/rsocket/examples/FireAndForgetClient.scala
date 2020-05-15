@@ -16,15 +16,13 @@ object FireAndForgetClient {
   def main(args: Array[String]): Unit = {
 
     // Create server
-    RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
-      Mono.just(new RSocket() {
-        override def fireAndForget(payload: Payload): Mono[Void] = {
+    RSocketServer.create(SocketAcceptor.forFireAndForget(payload => {
           // Log message
           logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
           payload.release()
           Mono.empty()
         }
-      })})
+      ))
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", 7000))

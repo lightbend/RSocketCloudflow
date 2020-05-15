@@ -25,15 +25,12 @@ object Multiserver {
 
     // Create servers
     ports.foreach(port =>
-      RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
-        Mono.just(new RSocket() {
-          override def fireAndForget(payload: Payload): Mono[Void] = {
-            // Peg request to the server
-            addHit(port)
-            payload.release()
-            Mono.empty()
-          }
-        })})
+      RSocketServer.create(SocketAcceptor.forFireAndForget(payload => {
+          // Peg request to the server
+          addHit(port)
+          payload.release()
+          Mono.empty()
+        }))
         // Enable Zero Copy
         .payloadDecoder(PayloadDecoder.ZERO_COPY)
         .bind(TcpServerTransport.create("0.0.0.0", port))

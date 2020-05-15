@@ -23,9 +23,7 @@ object ChannelEchoClient {
     Hooks.onErrorDropped((t: Throwable) => {})
 
     // Create server
-    RSocketServer.create((setup: ConnectionSetupPayload, sendingSocket: RSocket) => {
-      Mono.just(new RSocket() {
-        override def requestChannel(payloads: Publisher[Payload]): Flux[Payload] =
+    RSocketServer.create(SocketAcceptor.forRequestChannel(payloads =>
         // For every request
           Flux.from(payloads)
             .map(payload => {
@@ -36,7 +34,7 @@ object ChannelEchoClient {
               payload.release()
               ByteBufPayload.create("Echo: " + pdata)
             })
-      })})
+      ))
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", 7000)).block
