@@ -49,7 +49,10 @@ object FireAndForgetWithLeaseClient {
       .connect(TcpClientTransport.create(server.address)).block
 
     // Create queue drainer
-    new Thread(new QueueDrainer(blockingQueue)).start()
+    new Thread(() => while(true)
+        blockingQueue.take()
+      //      println(s"New ff message ${blockingQueue.take()}"
+    ).start()
 
     // Send messages
     Flux.generate(() => 0L, (state: Long, sink: SynchronousSink[Long]) => {
@@ -66,7 +69,7 @@ object FireAndForgetWithLeaseClient {
               Retry.indefinitely()
                 .filter((t : Throwable) => t.isInstanceOf[MissingLeaseException])
                 .doBeforeRetryAsync(rs => {
-                  System.out.println("Ran out of leases")
+                  println("Ran out of leases")
                   receiver.notifyWhenNewLease().then()
                 }))
         }
@@ -79,15 +82,6 @@ object FireAndForgetWithLeaseClient {
     server.dispose()
   }
 }
-
-class QueueDrainer(queue : LinkedBlockingDeque[String]) extends Runnable{
-  override def run(): Unit = {
-    while(true)
-      queue.take()
-//      println(s"New ff message ${queue.take()}")
-  }
-}
-
 
 // This is a class responsible for making decision on whether server is ready to
 // receive new FireAndForget or not base in the number of messages enqueued
@@ -103,7 +97,7 @@ class LeaseCalculator(tag : String, queue : LinkedBlockingDeque[String]) extends
     }
     println(s"$tag stats are $stats")
 
-    Flux.interval(leaseDuration)
+    Flux.interval(Duration.ZERO, leaseDuration)
       .handle((_, sink : SynchronousSink[Lease]) => {
         (maxQueueDepth - queue.size()) match {
           case requests if (requests > 0) => sink.next(Lease.create(leaseDuration.toMillis.toInt, requests))
