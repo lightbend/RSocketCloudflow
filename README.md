@@ -1,6 +1,6 @@
 # RSocket Cloudflow Ingress
 
-This repository is the companion code to the article at [http://TODO](http://TODO)
+This repository is the companion code to the [article](https://www.lightbend.com/blog/implementing-rsocket-ingress-in-cloudflow-part-1-getting-started)
 
 This project is based on the articles [RSocket Intro](https://www.baeldung.com/rsocket)
 [Reactive Service-to-service](https://dzone.com/articles/reactive-service-to-service-communication-with-rso-1)
