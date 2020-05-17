@@ -29,7 +29,7 @@ The examples here are:
     can reach a server. To demonstrate resumability stop and restart socat.
     * [Channel](interactions/src/main/scala/com/lightbend/rsocket/examples/ChannelEchoClient.scala) 
     demonstrates implementation of a back pressured channel
-* `support` is a shared project containing Avro definitions and shared transformation code
+* `support` is a shared project containing Avro definitions, shared transformation code and experimental Akka implementations
 * `sensordata` is a cloudflow implementation for the [Sensor data Processing](https://cloudflow.io/docs/current/get-started/hello-world-example.html)
 * `client` is an implementation of rsocket-based data provider for publishing sensor data.
 
@@ -37,11 +37,12 @@ The examples here are:
 
 The idea behind the implementation is to replace HTTP Ingress from the original implementation with the RSocket ingress.
 Three different ingress implementations are provided:
-* Fire and forget JSON based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/RSocketIngress.scala).
+* Fire and forget JSON based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/rsocket/ingress/UTF8FireAndForget.scala).
 Here Rsocket `fire and forget` interactions are used, and sensor data is passed as text JSON.
-* Fire and forget Avro based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/RSocketBinaryIngress.scala).
-Here Rsocket `fire and forget` interactions are used, and sensor data is passed as Avro encoded binary.
-* Stream Avro based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/RSocketStreamIngress.scala).
+* Fire and forget Avro based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/rsocket/ingress/BinaryFireAndForget.scala).
+Here RSocket `fire and forget` interactions are used, and sensor data is passed as Avro encoded binary. Alternatively, for this interaction
+you can use [class](sensordata/src/main/scala/com/lightbend/sensordata/rsocket/ingress/RSocketIngressSource.scala) using Akka source
+* Stream Avro based ingress implemented by the [class](sensordata/src/main/scala/com/lightbend/sensordata/rsocket/ingress/BinaryRequestStream.scala).
 Here Rsocket `request-stream` interactions are used, and sensor data is passed as Avro encoded binary. 
 
 Any of the implementations can be used. To pick the one that you want to use, go to [blueprint](sensordata/src/main/blueprint/blueprint.conf)
