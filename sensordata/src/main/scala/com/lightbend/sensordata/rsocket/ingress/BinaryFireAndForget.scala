@@ -27,12 +27,12 @@ class BinaryFireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sens
   override def run(): Unit = {
     val writer = sinkRef(outlet)
     // Create server
-    RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) =>{
-        // Get message and write to sink
-        SensorDataConverter(payload.getData).map(writer.write)
-        payload.release()
-        Mono.empty()
-      }))
+    RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) ⇒ {
+      // Get message and write to sink
+      SensorDataConverter(payload.getData).map(writer.write)
+      payload.release()
+      Mono.empty()
+    }))
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe

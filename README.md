@@ -16,13 +16,19 @@ Project contains several modules:
 * `interactions` - initial experimentations with RSockets, based on this [code](https://github.com/b3rnoulli/rsocket-examples).
 The examples here are:
     * [Fire and forget](interactions/src/main/scala/com/lightbend/rsocket/examples/FireAndForgetClient.scala) 
-    demonstrates implementation of a simple fire and forget implementation
+    demonstrates implementation of a simple fire and forget
+    * [Fire and forget with lease](interactions/src/main/scala/com/lightbend/rsocket/examples/FireAndForgetWithLeaseClient.scala) 
+    demonstrates implementation of a fire and forget using leasing
     * [Load balanced Fire and forget](interactions/src/main/scala/com/lightbend/rsocket/examples/Multiserver.scala) 
-    demonstrates implementation of a loadbalancer for fire and forget implementation
+    demonstrates implementation of a loadbalancer for fire and forget
     * [Request-stream](interactions/src/main/scala/com/lightbend/rsocket/examples/StreamingClient.scala) 
-    demonstrates implementation of a back preasuured request stream implementation
+    demonstrates implementation of a back pressured request stream
+    * [Resumable Request-stream](interactions/src/main/scala/com/lightbend/rsocket/examples/ResumableStreamingClient.scala) 
+    demonstrates implementation of a resumable request stream. Running this example requires usage of [sockat](https://medium.com/@copyconstruct/socat-29453e9fc8a6).
+    Start socat by running command `socat -d TCP-LISTEN:7001,fork,reuseaddr TCP:localhost:7000`, which creates a mapping between ports 7000 and 7001, so that a client
+    can reach a server. To demonstrate resumability stop and restart socat.
     * [Channel](interactions/src/main/scala/com/lightbend/rsocket/examples/ChannelEchoClient.scala) 
-    demonstrates implementation of a back preasuured channel implementation
+    demonstrates implementation of a back pressured channel
 * `support` is a shared project containing Avro definitions and shared transformation code
 * `sensordata` is a cloudflow implementation for the [Sensor data Processing](https://cloudflow.io/docs/current/get-started/hello-world-example.html)
 * `client` is an implementation of rsocket-based data provider for publishing sensor data.

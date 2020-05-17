@@ -35,14 +35,14 @@ class UTF8FireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sensor
   override def run(): Unit = {
     val writer = sinkRef(outlet)
     // Create server
-    RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) =>{
-        // Get data
-        val data = ByteString(payload.getDataUtf8)
-        // Convert and publish
-        fbu.apply(data).flatMap(writer.write)
-        payload.release()
-        Mono.empty()
-      }))
+    RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) ⇒ {
+      // Get data
+      val data = ByteString(payload.getDataUtf8)
+      // Convert and publish
+      fbu.apply(data).flatMap(writer.write)
+      payload.release()
+      Mono.empty()
+    }))
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", containerPort))
       .subscribe
