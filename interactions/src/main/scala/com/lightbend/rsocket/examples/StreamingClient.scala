@@ -20,16 +20,16 @@ object StreamingClient {
 
     // Create a server
     RSocketServer.create(SocketAcceptor.forRequestStream((payload: Payload) => {
-        // Log request
-        logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
-        payload.release()
-        // return stream
-        Flux.generate[Payload, Int](() => 0, (state: Int, sink: SynchronousSink[Payload]) => {
-          Thread.sleep(100)
-          sink.next(ByteBufPayload.create("Interval: " + state))
-          state + 1
-        })
-      }))
+      // Log request
+      logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
+      payload.release()
+      // return stream
+      Flux.generate[Payload, Int](() => 0, (state: Int, sink: SynchronousSink[Payload]) => {
+        Thread.sleep(100)
+        sink.next(ByteBufPayload.create("Interval: " + state))
+        state + 1
+      })
+    }))
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", 7000)).subscribe
 

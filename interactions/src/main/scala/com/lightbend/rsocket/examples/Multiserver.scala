@@ -26,11 +26,11 @@ object Multiserver {
     // Create servers
     ports.foreach(port =>
       RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) => {
-          // Peg request to the server
-          addHit(port)
-          payload.release()
-          Mono.empty()
-        }))
+        // Peg request to the server
+        addHit(port)
+        payload.release()
+        Mono.empty()
+      }))
         // Enable Zero Copy
         .payloadDecoder(PayloadDecoder.ZERO_COPY)
         .bind(TcpServerTransport.create("0.0.0.0", port))

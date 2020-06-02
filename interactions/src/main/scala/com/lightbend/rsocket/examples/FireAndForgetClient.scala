@@ -1,6 +1,6 @@
 package com.lightbend.rsocket.examples
 
-import io.rsocket.core.{RSocketConnector, RSocketServer}
+import io.rsocket.core.{ RSocketConnector, RSocketServer }
 import io.rsocket.frame.decoder.PayloadDecoder
 import io.rsocket.transport.netty.client.TcpClientTransport
 import io.rsocket.transport.netty.server.TcpServerTransport
@@ -17,11 +17,11 @@ object FireAndForgetClient {
 
     // Create server
     RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) => {
-        // Log message
-        logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
-        payload.release()
-        Mono.empty()
-      }))
+      // Log message
+      logger.info(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
+      payload.release()
+      Mono.empty()
+    }))
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", 7000))

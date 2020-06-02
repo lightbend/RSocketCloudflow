@@ -56,6 +56,19 @@ lazy val interactions = (project in file("./interactions"))
     dependencyOverrides += "io.netty" % "netty-transport-native-unix-common" % "4.1.49.Final"
   )
 
+lazy val transports = (project in file("./transports"))
+  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketBalancer, slf4, logback),
+    dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-codec-http" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-common" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-handler" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-resolver" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport-native-epoll" % "4.1.49.Final",
+    dependencyOverrides += "io.netty" % "netty-transport-native-unix-common" % "4.1.49.Final"
+  )
+
 lazy val support = (project in file("./support"))
   .enablePlugins(CloudflowAkkaStreamsLibraryPlugin)
   .settings(

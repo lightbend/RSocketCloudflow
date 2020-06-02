@@ -32,13 +32,13 @@ object ResumableStreamingClient {
 
     // Create a server
     RSocketServer.create(SocketAcceptor.forRequestStream((payload: Payload) => {
-        // Log request
-        logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
-        payload.release()
-        // return stream
-        Flux.interval(Duration.ofMillis(500))
-          .map(t => ByteBufPayload.create(t.toString()))
-      }))
+      // Log request
+      logger.info(s"Received 'request stream' request with payload: [${payload.getDataUtf8}] ")
+      payload.release()
+      // return stream
+      Flux.interval(Duration.ofMillis(500))
+        .map(t => ByteBufPayload.create(t.toString()))
+    }))
       .resume(resume)
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
       .bind(TcpServerTransport.create("0.0.0.0", 7000)).subscribe
@@ -52,7 +52,7 @@ object ResumableStreamingClient {
     // Send messages
     socket
       .requestStream(ByteBufPayload.create("Hello"))
-      .subscribe((value: Payload) =>  logger.info(s"New stream element ${value.getDataUtf8}"))
+      .subscribe((value: Payload) => logger.info(s"New stream element ${value.getDataUtf8}"))
 
     // Wait for completion
     Thread.sleep(100000)
