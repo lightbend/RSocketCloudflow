@@ -7,10 +7,10 @@ import io.rsocket.transport.netty.client._
 import io.rsocket.transport.netty.server._
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.Mono
-import java.util.function.Function
-
 
 object RequestResponceTCP {
+
+  val length = 10000
 
   def main(args: Array[String]): Unit = {
 
@@ -31,9 +31,10 @@ object RequestResponceTCP {
       .block
 
     val n = 1000
+    val data = repeatChar('x', length)
     val start = System.currentTimeMillis()
     1 to n foreach  {_ =>
-      socket.requestResponse(DefaultPayload.create("Hello"))
+      socket.requestResponse(DefaultPayload.create(data))
         .map((payload: Payload) => {
 //          println(s"Got reply ${payload.getDataUtf8}")
           payload.release()
@@ -44,4 +45,7 @@ object RequestResponceTCP {
     println(s"Executed $n request/replies in ${System.currentTimeMillis() - start} ms")
     socket.dispose()
   }
+
+  // Create a string of length
+  def repeatChar(char:Char, n: Int) = List.fill(n)(char).mkString
 }

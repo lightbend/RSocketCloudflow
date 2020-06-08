@@ -10,6 +10,8 @@ import io.rsocket.transport.local._
 
 object RequestResponceLocal {
 
+  val length = 10000
+
   def main(args: Array[String]): Unit = {
 
     // Server
@@ -29,9 +31,10 @@ object RequestResponceLocal {
       .block
 
     val n = 1000
+    val data = repeatChar('x', length)
     val start = System.currentTimeMillis()
     1 to n foreach  {_ =>
-      socket.requestResponse(DefaultPayload.create("Hello"))
+      socket.requestResponse(DefaultPayload.create(data))
         .map((payload: Payload) => {
 //          println(s"Got reply ${payload.getDataUtf8}")
           payload.release()
@@ -42,4 +45,7 @@ object RequestResponceLocal {
     println(s"Executed $n request/replies in ${System.currentTimeMillis() - start} ms")
     socket.dispose()
   }
+
+  // Create a string of length
+  def repeatChar(char:Char, n: Int) = List.fill(n)(char).mkString
 }

@@ -29,6 +29,7 @@ The examples here are:
     can reach a server. To demonstrate resumability stop and restart socat.
     * [Channel](interactions/src/main/scala/com/lightbend/rsocket/examples/ChannelEchoClient.scala) 
     demonstrates implementation of a back pressured channel
+* `itransports` - is an experimentations with RSockets pluggable transports (see below)
 * `support` is a shared project containing Avro definitions, shared transformation code and experimental Akka implementations
 * `sensordata` is a cloudflow implementation for the [Sensor data Processing](https://cloudflow.io/docs/current/get-started/hello-world-example.html)
 * `client` is an implementation of rsocket-based data provider for publishing sensor data.
@@ -109,3 +110,14 @@ To do this, first execute the first 4 steps above.
     * Validate service name and port by running `kubectl get service -n sensordata`
     * Update [deployment](install/client.yaml) to set required parameters
     * Deploy client by running `kubectl apply -f <your project location>install/client.yaml`
+    
+## Protocol pluggability and comparison
+The module [transports](/transports) shows transports pluggability in RSocket implementations.
+Out of the box, RSocket java supports 3 treansports:
+* TCP
+* WebSockets
+* Local (in JVM)  
+
+Some interesting TCP vs Web Sockets comparisons are [here](https://medium.com/kifi-engineering/websockets-vs-regular-sockets-b3b8e7ea0708),
+[here](https://developerinsider.co/difference-between-http-and-http-2-0-websocket/) and
+[here](https://stackoverflow.com/questions/2681267/what-is-the-fundamental-difference-between-websockets-and-pure-tcp)
