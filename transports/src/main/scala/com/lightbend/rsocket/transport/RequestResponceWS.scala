@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 
 object RequestResponceWS {
 
-  val length = 10000
+  val length = 1024
 
   def main(args: Array[String]): Unit = {
 

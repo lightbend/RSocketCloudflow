@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 
 object RequestResponceTCP {
 
-  val length = 10000
+  val length = 1024
 
   def main(args: Array[String]): Unit = {
 

@@ -10,7 +10,7 @@ import io.rsocket.transport.local._
 
 object RequestResponceLocal {
 
-  val length = 10000
+  val length = 1024
 
   def main(args: Array[String]): Unit = {
 
