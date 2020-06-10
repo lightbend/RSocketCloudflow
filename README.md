@@ -121,3 +121,24 @@ Out of the box, RSocket java supports 3 treansports:
 Some interesting TCP vs Web Sockets comparisons are [here](https://medium.com/kifi-engineering/websockets-vs-regular-sockets-b3b8e7ea0708),
 [here](https://developerinsider.co/difference-between-http-and-http-2-0-websocket/) and
 [here](https://stackoverflow.com/questions/2681267/what-is-the-fundamental-difference-between-websockets-and-pure-tcp)
+
+## Kafka Protocol
+
+To demonstrate protocol pluggability, there is a quick implementation of [Kafka transport](transports/src/main/java/com/lightbend/rsocket/transport/kafka) based 
+on the [Reactive Kafka APIs](https://projectreactor.io/docs/kafka/release/reference/)
+
+To simplify local testing, the project also contains [Embedded Kafka Server](transports/src/main/java/com/lightbend/rsocket/transport/kafka/embedded)
+
+An example of embedded server usage with Reactive Kafka APIs can be found [here](transports/src/main/java/com/lightbend/rsocket/transport/kafka/example)
+
+The actual implementation is based on 3 classes:
+* [Kafka Duplex connection](transports/src/main/java/com/lightbend/rsocket/transport/kafka/KafkaDuplexConnection.java) a duplex connection for RSocket over Kafka. This connection is
+based on Kafka `bootstrapServers` connection string and a base topic, used by server to recieve message.
+By convention used here this topic is used for server to recieve and client to send message. A companion 
+topic with the name `topic-reply` is used by server to send and consumer to recieve messages.
+* [Kafka client transport](transports/src/main/java/com/lightbend/rsocket/transport/kafka/KafkaClientTransport.java)
+is an implementation of RSocket client transport for Kafka
+* [Kafka server transport](transports/src/main/java/com/lightbend/rsocket/transport/kafka/KafkaServerTransport.java)
+is an implementation of RSocket server transport for Kafka
+
+A Simple example for using RSocket communications over Kafka can be found [here](transports/src/main/scala/com/lightbend/rsocket/transport/RequestResponceKafka.scala)
