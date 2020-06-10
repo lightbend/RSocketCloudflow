@@ -20,6 +20,12 @@ object Versions {
   val LogBackVersion        = "1.2.3"
   val marshallersVersion    = "10.1.11"
 
+  val reactorKafkaVersion   = "1.2.2.RELEASE"
+  val kafkaVersion          = "2.4.0"
+  val curatorVersion        = "4.3.0"
+  val commonIOVersion       = "1.3.2"
+
+
   val akkaVersion           = "2.5.29"
 
   val TypesafeConfigVersion = "1.3.3"

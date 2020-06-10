@@ -28,7 +28,7 @@ object RequestResponceWS {
     // Client
     val socket = RSocketConnector.create()
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
-      .connect(WebsocketClientTransport.create("localhost", 7000))
+      .connect(WebsocketClientTransport.create("0.0.0.0", 7000))
       .block
 
     val n = 1000
