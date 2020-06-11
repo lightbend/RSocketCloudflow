@@ -141,4 +141,4 @@ is an implementation of RSocket client transport for Kafka
 * [Kafka server transport](transports/src/main/java/com/lightbend/rsocket/transport/kafka/KafkaServerTransport.java)
 is an implementation of RSocket server transport for Kafka
 
-A Simple example for using RSocket communications over Kafka can be found [here](transports/src/main/scala/com/lightbend/rsocket/transport/RequestResponceKafka.scala)
+A Simple example for using RSocket communications over Kafka can be found [here](transports/src/main/scala/com/lightbend/rsocket/transport/kafka/RequestResponceKafka.scala)

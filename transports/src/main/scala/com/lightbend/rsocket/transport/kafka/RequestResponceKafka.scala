@@ -1,12 +1,10 @@
-package com.lightbend.rsocket.transport
+package com.lightbend.rsocket.transport.kafka
 
-import com.lightbend.rsocket.transport.kafka._
 import com.lightbend.rsocket.transport.kafka.embedded.KafkaEmbedded
-import io.rsocket._
-import io.rsocket.core._
+import io.rsocket.core.{RSocketConnector, RSocketServer}
 import io.rsocket.util.DefaultPayload
+import io.rsocket.{Payload, SocketAcceptor}
 import reactor.core.publisher.Mono
-
 
 object RequestResponceKafka {
 

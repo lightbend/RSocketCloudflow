@@ -100,6 +100,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
               .map(frame -> {
                 byte[] bytes = new byte[frame.readableBytes()];
                 frame.readBytes(bytes);
+                System.out.println("Sending new message to topic " + topic);
                 return SenderRecord.create(new ProducerRecord<>(topic,null,bytes), 1);
               }))
               .subscribe();
@@ -137,7 +138,10 @@ final class KafkaDuplexConnection implements DuplexConnection {
     }
 
     public Flux<ByteBuf> getKafkaFlux() {
-      return kafkaFlux.map(receiverRecord -> copiedBuffer(receiverRecord.value()));
+      return kafkaFlux.map(receiverRecord -> {
+        System.out.println("Recieving new message to topic " + receiverRecord.topic());
+        return copiedBuffer(receiverRecord.value());
+      });
     }
   }
 }
