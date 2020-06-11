@@ -34,12 +34,13 @@ object StreamingClient {
       .bind(TcpServerTransport.create("0.0.0.0", 7000)).subscribe
 
     // create a client
-    val socket = RSocketConnector
-      .connectWith(TcpClientTransport.create("0.0.0.0", 7000))
+    val client = RSocketConnector.create()
+      .payloadDecoder(PayloadDecoder.ZERO_COPY)
+      .connect(TcpClientTransport.create("0.0.0.0", 7000))
       .block
 
     // Send messages
-    socket
+    client
       .requestStream(ByteBufPayload.create("Hello"))
       .subscribe(new BaseSubscriber[Payload] {
         // Back pressure subscriber
@@ -71,6 +72,6 @@ object StreamingClient {
     // Wait for completion
     Thread.sleep(3000)
 
-    socket.dispose();
+    client.dispose();
   }
 }

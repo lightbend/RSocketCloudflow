@@ -39,12 +39,12 @@ final class KafkaDuplexConnection implements DuplexConnection {
     this.onClose = Objects.requireNonNull(onClose, "onClose must not be null");
 
     if(server){
-      producer = new KafkaProducer(bootstrapServers, name, "server");
-      consumer = new KafkaConsumer(bootstrapServers, name + "-reply", "server");
+      producer = new KafkaProducer(bootstrapServers, name + "-reply", "server");
+      consumer = new KafkaConsumer(bootstrapServers, name, "server");
     }
     else{
-      producer = new KafkaProducer(bootstrapServers, name + "-reply", "client");
-      consumer = new KafkaConsumer(bootstrapServers, name, "client");
+      producer = new KafkaProducer(bootstrapServers, name, "client");
+      consumer = new KafkaConsumer(bootstrapServers, name + "-reply", "client");
     }
   }
 
@@ -100,7 +100,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
               .map(frame -> {
                 byte[] bytes = new byte[frame.readableBytes()];
                 frame.readBytes(bytes);
-                System.out.println("Sending new message to topic " + topic);
+//                System.out.println("Sending new message to topic " + topic);
                 return SenderRecord.create(new ProducerRecord<>(topic,null,bytes), 1);
               }))
               .subscribe();
@@ -139,7 +139,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
 
     public Flux<ByteBuf> getKafkaFlux() {
       return kafkaFlux.map(receiverRecord -> {
-        System.out.println("Recieving new message to topic " + receiverRecord.topic());
+//        System.out.println("Recieving new message to topic " + receiverRecord.topic());
         return copiedBuffer(receiverRecord.value());
       });
     }
