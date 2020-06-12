@@ -100,7 +100,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
               .map(frame -> {
                 byte[] bytes = new byte[frame.readableBytes()];
                 frame.readBytes(bytes);
-//                System.out.println("Sending new message to topic " + topic);
+                System.out.println("Sending new message to topic " + topic);
                 return SenderRecord.create(new ProducerRecord<>(topic,null,bytes), 1);
               }))
               .subscribe();
@@ -122,7 +122,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
       String name = prefix + "-" + topic;
       Map<String, Object> props = new HashMap<>();
       props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-      props.put(ConsumerConfig.CLIENT_ID_CONFIG, name + "-consumer");
+      props.put(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID() + "-consumer");
       props.put(ConsumerConfig.GROUP_ID_CONFIG, name + "-group");
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
