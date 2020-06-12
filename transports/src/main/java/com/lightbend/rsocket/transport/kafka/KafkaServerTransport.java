@@ -7,6 +7,7 @@ import io.rsocket.fragmentation.FragmentationDuplexConnection;
 import io.rsocket.fragmentation.ReassemblyDuplexConnection;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.ServerTransport;
+import io.rsocket.transport.netty.server.CloseableChannel;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 
@@ -53,18 +54,18 @@ public final class KafkaServerTransport implements ServerTransport<Closeable> {
             });
   }
 
+//  @Override
+//  public Mono<Closeable> start(ConnectionAcceptor acceptor, int mtu) {
+//    Objects.requireNonNull(acceptor, "acceptor must not be null");
+//    Mono<Closeable> isError = FragmentationDuplexConnection.checkMtu(mtu);
+//    return isError != null ? isError : connect(acceptor, mtu);
+//  }
+
+
   @Override
   public Mono<Closeable> start(ConnectionAcceptor acceptor, int mtu) {
     Objects.requireNonNull(acceptor, "acceptor must not be null");
     Mono<Closeable> isError = FragmentationDuplexConnection.checkMtu(mtu);
-    return isError != null ? isError : connect(acceptor, mtu);
-  }
-
-/*
-  @Override
-  public Mono<CloseableChannel> start(ConnectionAcceptor acceptor, int mtu) {
-    Objects.requireNonNull(acceptor, "acceptor must not be null");
-    Mono<CloseableChannel> isError = FragmentationDuplexConnection.checkMtu(mtu);
     if(isError != null)
       return isError;
     MonoProcessor<Void> closeNotifier = MonoProcessor.create();
@@ -75,9 +76,21 @@ public final class KafkaServerTransport implements ServerTransport<Closeable> {
       connection = new FragmentationDuplexConnection(kafkaConnection, mtu, true, "server");
     else
       connection = new ReassemblyDuplexConnection(kafkaConnection, false);
-    acceptor.apply(connection).subscribe();
 
-  } */
+    return acceptor.apply(connection)
+            .thenReturn(new Closeable() {
+
+      @Override
+      public void dispose() {
+        connection.dispose();
+      }
+
+      @Override
+      public Mono<Void> onClose() {
+        return closeNotifier;
+      }
+    });
+  }
 
     /**
      * A {@link Consumer} of {@link DuplexConnection} that is called when a server has been created.
