@@ -28,12 +28,12 @@ object StreamingClientKafka {
         state + 1
       })
     }))
-      .bind(KafkaServerTransport.create(BOOTSTRAP_SERVERS,TOPIC))
+      .bind(KafkaServerTransport.create(BOOTSTRAP_SERVERS, TOPIC))
       .subscribe()
 
     // create a client
     var client = RSocketConnector.create()
-      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS,TOPIC))
+      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS, TOPIC))
       .block
 
     // Send messages
@@ -43,10 +43,12 @@ object StreamingClientKafka {
         // Back pressure subscriber
         val NUMBER_OF_REQUESTS_TO_PROCESS = 5l
         var receivedItems = 0
+
         // Start subscription
         override def hookOnSubscribe(subscription: Subscription): Unit = {
           subscription.request(Long.MaxValue)
         }
+
         // Processing request
         override def hookOnNext(value: Payload): Unit = {
           println(s"New stream element ${value.getDataUtf8}")
@@ -56,10 +58,13 @@ object StreamingClientKafka {
             request(NUMBER_OF_REQUESTS_TO_PROCESS)
           }
         }
+
         // Invoked on stream completion
         override def hookOnComplete(): Unit = println("Completing subscription")
+
         // Invoked on stream error
         override def hookOnError(throwable: Throwable): Unit = println(s"Stream subscription error [$throwable]")
+
         // Invoked on stream cancelation
         override def hookOnCancel(): Unit = println("Subscription canceled")
       })
@@ -67,43 +72,6 @@ object StreamingClientKafka {
     // Wait for completion
     Thread.sleep(5000)
 
-    println("Disconnecting")
     client.dispose()
-
-    println("Reconnecting")
-    // create a client
-    client = RSocketConnector.create()
-      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS,TOPIC))
-      .block
-    println("Reconnected")
-
-    client
-      .requestStream(DefaultPayload.create("Hello"))
-      .subscribe(new BaseSubscriber[Payload] {
-        // Back pressure subscriber
-        val NUMBER_OF_REQUESTS_TO_PROCESS = 5l
-        var receivedItems = 0
-        // Start subscription
-        override def hookOnSubscribe(subscription: Subscription): Unit = {
-          subscription.request(NUMBER_OF_REQUESTS_TO_PROCESS)
-        }
-        // Processing request
-        override def hookOnNext(value: Payload): Unit = {
-          println(s"New stream element ${value.getDataUtf8}")
-          receivedItems += 1
-          if (receivedItems % NUMBER_OF_REQUESTS_TO_PROCESS == 0) {
-            println(s"Requesting next [$NUMBER_OF_REQUESTS_TO_PROCESS] elements")
-            request(NUMBER_OF_REQUESTS_TO_PROCESS)
-          }
-        }
-        // Invoked on stream completion
-        override def hookOnComplete(): Unit = println("Completing subscription")
-        // Invoked on stream error
-        override def hookOnError(throwable: Throwable): Unit = println(s"Stream subscription error [$throwable]")
-        // Invoked on stream cancelation
-        override def hookOnCancel(): Unit = println("Subscription canceled")
-      })
-
-    Thread.sleep(100000)
   }
 }

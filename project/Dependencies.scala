@@ -13,6 +13,8 @@ object Dependencies {
   val curator               = "org.apache.curator"  % "curator-test"                      % curatorVersion
   val commonIO              = "commons-io"          % "commons-io"                        % commonIOVersion
 
+  val chronicle             = "net.openhft"         % "chronicle-queue"                   % chronicleVersion
+
   val slf4                  = "org.slf4j"           % "slf4j-api"                         % SLFVersion
   val logback               = "ch.qos.logback"      % "logback-classic"                   % LogBackVersion
 

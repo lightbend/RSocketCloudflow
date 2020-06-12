@@ -25,6 +25,7 @@ object Versions {
   val curatorVersion        = "4.3.0"
   val commonIOVersion       = "1.3.2"
 
+  val chronicleVersion      = "5.19.32"
 
   val akkaVersion           = "2.5.29"
 

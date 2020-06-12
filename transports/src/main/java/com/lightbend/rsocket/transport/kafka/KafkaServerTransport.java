@@ -42,26 +42,6 @@ public final class KafkaServerTransport implements ServerTransport<Closeable> {
     return new KafkaServerTransport(bootstrapServers, name);
   }
 
-  private Mono<Closeable> connect(ConnectionAcceptor acceptor, int mtu) {
-    return Mono.defer(
-            () ->  {
-              ServerDuplexConnectionAcceptor server = new ServerDuplexConnectionAcceptor(name, acceptor, mtu);
-              MonoProcessor<Void> closeNotifier = MonoProcessor.create();
-              KafkaDuplexConnection connection =
-                      new KafkaDuplexConnection(bootstrapServers, name, true, ByteBufAllocator.DEFAULT, closeNotifier);
-              server.accept(connection);
-              return Mono.just(server);
-            });
-  }
-
-//  @Override
-//  public Mono<Closeable> start(ConnectionAcceptor acceptor, int mtu) {
-//    Objects.requireNonNull(acceptor, "acceptor must not be null");
-//    Mono<Closeable> isError = FragmentationDuplexConnection.checkMtu(mtu);
-//    return isError != null ? isError : connect(acceptor, mtu);
-//  }
-
-
   @Override
   public Mono<Closeable> start(ConnectionAcceptor acceptor, int mtu) {
     Objects.requireNonNull(acceptor, "acceptor must not be null");
@@ -90,60 +70,5 @@ public final class KafkaServerTransport implements ServerTransport<Closeable> {
         return closeNotifier;
       }
     });
-  }
-
-    /**
-     * A {@link Consumer} of {@link DuplexConnection} that is called when a server has been created.
-     */
-  static class ServerDuplexConnectionAcceptor implements Consumer<DuplexConnection>, Closeable {
-
-    private final ConnectionAcceptor acceptor;
-
-    private final MonoProcessor<Void> onClose = MonoProcessor.create();
-
-    private final int mtu;
-
-    /**
-     * Creates a new instance
-     *
-     * @param name the name of the server
-     * @param acceptor the {@link ConnectionAcceptor} to call when the server has been created
-     * @throws NullPointerException if {@code name} or {@code acceptor} is {@code null}
-     */
-    ServerDuplexConnectionAcceptor(String name, ConnectionAcceptor acceptor, int mtu) {
-      Objects.requireNonNull(name, "name must not be null");
-
-      this.acceptor = Objects.requireNonNull(acceptor, "acceptor must not be null");
-      this.mtu = mtu;
-    }
-
-    @Override
-    public void accept(DuplexConnection duplexConnection) {
-      Objects.requireNonNull(duplexConnection, "duplexConnection must not be null");
-
-      if (mtu > 0) {
-        duplexConnection =
-                new FragmentationDuplexConnection(duplexConnection, mtu, false, "server");
-      } else {
-        duplexConnection = new ReassemblyDuplexConnection(duplexConnection, false);
-      }
-
-      acceptor.apply(duplexConnection).subscribe();
-    }
-
-    @Override
-    public void dispose() {
-      onClose.onComplete();
-    }
-
-    @Override
-    public boolean isDisposed() {
-      return onClose.isDisposed();
-    }
-
-    @Override
-    public Mono<Void> onClose() {
-      return onClose;
-    }
   }
 }

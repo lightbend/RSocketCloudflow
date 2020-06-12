@@ -57,7 +57,7 @@ lazy val interactions = (project in file("./interactions"))
   )
 
 lazy val transports = (project in file("./transports"))
-  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketLocal, reactorKafka, kafka, curator, commonIO, slf4, logback),
+  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketLocal, reactorKafka, kafka, curator, commonIO, chronicle, slf4, logback),
     dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec-http" % "4.1.49.Final",
