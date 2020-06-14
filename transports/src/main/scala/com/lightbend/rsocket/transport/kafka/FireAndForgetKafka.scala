@@ -34,6 +34,7 @@ object FireAndForgetKafka {
     val n = 20
     1 to n foreach { i =>
       client.fireAndForget(ByteBufPayload.create("message " + i)).block
+      Thread.sleep(100);
     }
     // Wait and complete
     Thread.sleep(10000)

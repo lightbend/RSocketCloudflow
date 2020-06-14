@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils;
 import reactor.core.publisher.Flux;
 
 import java.io.File;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,8 +20,11 @@ public class ChronicleTest {
         if (queueDirectory.exists() && queueDirectory.isDirectory()) try {
             FileUtils.deleteDirectory(queueDirectory);
         } catch (Throwable e) {
-            System.out.println("Failed to delete directory " + queueDirectory.getAbsolutePath() + " Error: " + e);
+            System.out.println("Failed to delete queue directory " + queueDirectory.getAbsolutePath() + " Error: " + e);
         }
+
+        // Start executor
+        ExecutorService executor = Executors.newFixedThreadPool(2);
 
         // Create producer and consumer
         ChronicleProducer producer = new ChronicleProducer(directory);
@@ -45,13 +47,14 @@ public class ChronicleTest {
             }
         };
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-        CompletableFuture[] futures = new CompletableFuture[2];
-        futures[0] = CompletableFuture.runAsync(queueWriter, executor);
-        futures[1] = CompletableFuture.runAsync(queueReader, executor);
-        CompletableFuture.allOf(futures).join();
+        executor.submit(queueReader);
+        executor.submit(queueWriter);
 
-        producer.close();
+        Thread.sleep(1000);
+
         consumer.close();
+        producer.close();
+
+        System.exit(0);
     }
 }

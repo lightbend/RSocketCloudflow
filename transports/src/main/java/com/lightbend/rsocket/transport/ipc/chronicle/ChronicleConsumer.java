@@ -5,42 +5,54 @@ import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.wire.DocumentContext;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 
 public class ChronicleConsumer {
 
     private ChronicleQueue queue;
     private ExcerptTailer tailer;
+    private String directory;
+    private boolean opened = true;
 
-    ChronicleConsumer(String directory) {
+    public ChronicleConsumer(String directory) {
+        this.directory = directory;
         // Create queue
         queue = ChronicleQueue.singleBuilder(directory).build();
         // Create tailer
         tailer = queue.createTailer();
-    }
+     }
 
     public Flux<byte[]> consumeMessages() {
+        return pollAsync()
+                .repeatWhenEmpty(it -> it.delayElements(Duration.ofMillis(1)))
+                .repeat(() -> opened);
+    }
 
-        return Flux.push(sink -> {
-            while (true)
-                sink.next(nextMessage());
-        });
+    public Mono<byte[]> pollAsync() {
+        return Mono.fromCallable(() -> nextMessage())
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     private byte[] nextMessage(){
-        DocumentContext dc = tailer.readingDocument();
-        while(!dc.isPresent()){
-            try {
-                Thread.sleep(1);
-            }catch (Throwable t){}
-            dc = tailer.readingDocument();
+        try {
+            DocumentContext dc = tailer.readingDocument();
+            if (!dc.isPresent())
+                return null;
+            Bytes bytes = dc.wire().bytes();
+            int mlen = bytes.length();
+            byte[] buffer = new byte[mlen];
+            bytes.read(buffer);
+            return buffer;
+        }catch (Throwable t){
+            return null;
         }
-        Bytes bytes = dc.wire().bytes();
-        int mlen = bytes.length();
-        byte[] buffer = new byte[mlen];
-        bytes.read(buffer);
-        return buffer;
     }
 
-    public void close(){ queue.close();}
+    public void close(){
+        opened = false;
+        queue.close();
+    }
 }
