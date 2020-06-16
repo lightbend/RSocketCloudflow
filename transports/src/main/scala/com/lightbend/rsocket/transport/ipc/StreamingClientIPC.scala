@@ -1,9 +1,12 @@
 package com.lightbend.rsocket.transport.ipc
 
-import com.lightbend.rsocket.transport.kafka.embedded.KafkaEmbedded
+import java.io.File
+
+import com.lightbend.rsocket.transport.ipc.RequestResponceIPC.directory
 import io.rsocket._
 import io.rsocket.core._
 import io.rsocket.util._
+import org.apache.commons.io.FileUtils
 import org.reactivestreams.Subscription
 import reactor.core.publisher._
 
@@ -13,6 +16,13 @@ object StreamingClientIPC {
 
   def main(args: Array[String]): Unit = {
 
+    // Clean up
+    val queueDirectory = new File(directory)
+    if (queueDirectory.exists && queueDirectory.isDirectory) try FileUtils.deleteDirectory(queueDirectory)
+    catch {
+      case e: Throwable =>
+        System.out.println("Failed to delete queue directory " + queueDirectory.getAbsolutePath + " Error: " + e)
+    }
 
     // Create a server
     RSocketServer.create(SocketAcceptor.forRequestStream((payload: Payload) => {

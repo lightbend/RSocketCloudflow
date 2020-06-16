@@ -52,8 +52,9 @@ object RequestResponceIPC {
           payload
         })
         .block
+      Thread.sleep(1)
     }
-    println(s"Executed $n request/replies in ${System.currentTimeMillis() - start} ms")
+    println(s"Executed $n request/replies in ${System.currentTimeMillis() - start - n} ms")
     socket.dispose()
   }
 

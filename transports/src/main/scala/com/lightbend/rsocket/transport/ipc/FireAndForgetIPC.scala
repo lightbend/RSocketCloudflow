@@ -1,8 +1,12 @@
 package com.lightbend.rsocket.transport.ipc
 
+import java.io.File
+
+import com.lightbend.rsocket.transport.ipc.RequestResponceIPC.directory
 import io.rsocket._
 import io.rsocket.core._
 import io.rsocket.util.ByteBufPayload
+import org.apache.commons.io.FileUtils
 import reactor.core.publisher.Mono
 
 object FireAndForgetIPC {
@@ -11,6 +15,13 @@ object FireAndForgetIPC {
 
   def main(args: Array[String]): Unit = {
 
+    // Clean up
+    val queueDirectory = new File(directory)
+    if (queueDirectory.exists && queueDirectory.isDirectory) try FileUtils.deleteDirectory(queueDirectory)
+    catch {
+      case e: Throwable =>
+        System.out.println("Failed to delete queue directory " + queueDirectory.getAbsolutePath + " Error: " + e)
+    }
 
     // Create server
     val server = RSocketServer.create(SocketAcceptor.forFireAndForget((payload: Payload) => {
