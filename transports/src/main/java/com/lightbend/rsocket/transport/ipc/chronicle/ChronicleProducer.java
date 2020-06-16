@@ -32,6 +32,7 @@ public class ChronicleProducer {
         messages.doOnNext(message -> {
 //            System.out.println("Sending new message");
             appender.writeBytes(b -> b.write(message));
+//            appender.writeDocument(d -> d.getValueOut().bytes(message));
         }).subscribe();
     }
 

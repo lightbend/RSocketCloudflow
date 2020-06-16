@@ -101,6 +101,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
                 byte[] bytes = new byte[frame.readableBytes()];
                 frame.readBytes(bytes);
 //                System.out.println("Sending new message to topic " + topic);
+                frame.release();
                 return SenderRecord.create(new ProducerRecord<>(topic,null,bytes), 1);
               }))
               .subscribe();

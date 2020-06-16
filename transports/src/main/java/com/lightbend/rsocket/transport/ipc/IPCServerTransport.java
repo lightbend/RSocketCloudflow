@@ -7,11 +7,9 @@ import io.rsocket.fragmentation.FragmentationDuplexConnection;
 import io.rsocket.fragmentation.ReassemblyDuplexConnection;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.ServerTransport;
-import org.apache.commons.io.FileUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 
-import java.io.File;
 import java.util.Objects;
 
 /**
@@ -22,15 +20,6 @@ public final class IPCServerTransport implements ServerTransport<Closeable> {
   private String directory;
 
   private IPCServerTransport(String directory) {
-
-      // Clean up directory
-      File queueDirectory = new File(directory);
-      if (queueDirectory.exists() && queueDirectory.isDirectory()) try {
-          FileUtils.deleteDirectory(queueDirectory);
-      } catch (Throwable e) {
-          System.out.println("Failed to delete queue directory " + queueDirectory.getAbsolutePath() + " Error: " + e);
-      }
-
       this.directory = directory;
   }
 

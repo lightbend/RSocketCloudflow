@@ -44,6 +44,7 @@ final class IPCDuplexConnection implements DuplexConnection {
             .map(frame -> {
               byte[] bytes = new byte[frame.readableBytes()];
               frame.readBytes(bytes);
+              frame.release();
               return bytes;
             }));
     return Mono.empty();

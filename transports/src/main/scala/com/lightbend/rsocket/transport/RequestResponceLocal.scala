@@ -30,8 +30,8 @@ object RequestResponceLocal {
       .connect(LocalClientTransport.create("boris"))
       .block
 
-    val n = 1000
-    val data = repeatChar('x', length)
+    val n = 10000
+    val data = repeatChar('x', length).getBytes()
     val start = System.currentTimeMillis()
     1 to n foreach  {_ =>
       socket.requestResponse(DefaultPayload.create(data))

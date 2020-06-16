@@ -6,6 +6,7 @@ import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.RollCycles;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.DocumentContext;
+import net.openhft.chronicle.wire.ValueIn;
 import net.openhft.chronicle.wire.WireType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,7 +35,7 @@ public class ChronicleConsumer {
 
     public Flux<byte[]> consumeMessages() {
         return pollAsync()
-                .repeatWhenEmpty(it -> it.delayElements(Duration.ofNanos(25)))
+                .repeatWhenEmpty(it -> it.delayElements(Duration.ofNanos(50)))
                 .repeat(() -> opened);
     }
 
@@ -50,6 +51,9 @@ public class ChronicleConsumer {
 //                System.out.println("No data on the queue " + directory);
                 return null;
             }
+//            ValueIn in = dc.wire().getValueIn();
+//            return in.bytes();
+
             Bytes bytes = dc.wire().bytes();
             int mlen = bytes.length();
             byte[] buffer = new byte[mlen];
