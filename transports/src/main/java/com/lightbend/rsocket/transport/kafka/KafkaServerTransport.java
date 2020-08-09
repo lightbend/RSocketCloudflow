@@ -2,16 +2,15 @@ package com.lightbend.rsocket.transport.kafka;
 
 import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.Closeable;
-import io.rsocket.DuplexConnection;
 import io.rsocket.fragmentation.FragmentationDuplexConnection;
 import io.rsocket.fragmentation.ReassemblyDuplexConnection;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.ServerTransport;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoProcessor;
+import org.reactivestreams.Subscription;
+import reactor.core.CoreSubscriber;
+import reactor.core.publisher.*;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * An implementation of {@link ServerTransport} that connects to a {@link ClientTransport} using Kafka.
@@ -47,28 +46,53 @@ public final class KafkaServerTransport implements ServerTransport<Closeable> {
     Mono<Closeable> isError = FragmentationDuplexConnection.checkMtu(mtu);
     if(isError != null)
       return isError;
-    MonoProcessor<Void> closeNotifier = MonoProcessor.create();
-    KafkaDuplexConnection kafkaConnection =
-            new KafkaDuplexConnection(bootstrapServers, name, true, ByteBufAllocator.DEFAULT, closeNotifier);
-    DuplexConnection connection;
-    if (mtu > 0)
-      connection = new FragmentationDuplexConnection(kafkaConnection, mtu, true, "server");
-    else
-      connection = new ReassemblyDuplexConnection(kafkaConnection, false);
+    return KafkaDuplexConnection.accept(bootstrapServers, name, ByteBufAllocator.DEFAULT)
+            .map(connection -> {
+              if (mtu > 0)
+                return new FragmentationDuplexConnection(connection, mtu, true, "server");
+              else
+                return new ReassemblyDuplexConnection(connection, false);
+            })
+            .concatMap(acceptor)
+            .then()
+            .transform(Operators.<Void, Closeable>lift((__, actual) -> new KafkaCloseable(actual)));
+  }
 
-    return acceptor.apply(connection)
-            .thenReturn(new Closeable() {
-     @Override
-      public void dispose() {
-        connection.dispose();
-        closeNotifier.onComplete();
-     }
+  static class KafkaCloseable extends BaseSubscriber<Void> implements Closeable {
 
-     @Override
-     public boolean isDisposed() { return closeNotifier.isDisposed(); }
+    final MonoProcessor<Void> onClose = MonoProcessor.create();
+    final CoreSubscriber<? super Closeable> actual;
 
-     @Override
-     public Mono<Void> onClose() { return closeNotifier; }
-    });
+    KafkaCloseable(CoreSubscriber<? super Closeable> actual) {
+      this.actual = actual;
+    }
+
+    @Override
+    protected void hookOnSubscribe(Subscription subscription) {
+      super.hookOnSubscribe(subscription);
+      actual.onSubscribe(this);
+      actual.onNext(this);
+      actual.onComplete();
+    }
+
+    @Override
+    public Mono<Void> onClose() {
+      return onClose;
+    }
+
+    @Override
+    protected void hookOnComplete() {
+      onClose.onComplete();
+    }
+
+    @Override
+    protected void hookOnError(Throwable throwable) {
+      onClose.onError(throwable);
+    }
+
+    @Override
+    protected void hookOnCancel() {
+      onClose.dispose();
+    }
   }
 }
