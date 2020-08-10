@@ -40,7 +40,7 @@ object RequestResponceIPC {
       .connect(SharedMemoryClientTransport.create(8081, ByteBufAllocator.DEFAULT, eventLoopGroup))
       .block
 
-    val n = 50
+    val n = 5
     val start = System.currentTimeMillis()
     1 to n foreach { i =>
       socket.requestResponse(DefaultPayload.create(s"new request $i"))
