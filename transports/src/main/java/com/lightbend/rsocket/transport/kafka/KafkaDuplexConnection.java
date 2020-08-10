@@ -3,6 +3,7 @@ package com.lightbend.rsocket.transport.kafka;
 import io.netty.buffer.ByteBuf;
 import static io.netty.buffer.Unpooled.*;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.CharsetUtil;
 import io.rsocket.DuplexConnection;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -27,18 +28,47 @@ import java.util.*;
 /** An implementation of {@link DuplexConnection} that connects using Kafka. */
 final class KafkaDuplexConnection implements DuplexConnection {
 
-  private String name;                                // Name of the input server
   private KafkaConsumer consumer;                     // Consumer
   private KafkaProducer producer;                     // Producer
 
   private final ByteBufAllocator allocator;
-  private final MonoProcessor<Void> onClose;
+  private final MonoProcessor<Void> onClose = MonoProcessor.create();
 
-  public KafkaDuplexConnection(String bootstrapServers, String name, boolean server, ByteBufAllocator allocator, MonoProcessor<Void> onClose){
+  static Mono<KafkaDuplexConnection> create(String bootstrapServers, String name, ByteBufAllocator allocator) {
+    final String topicName = UUID.randomUUID().toString();
+    return new KafkaProducer(bootstrapServers, name, "client")
+            .send(Mono.fromSupplier(() -> {
+              final ByteBuf initFrame = allocator.buffer();
+              initFrame.writeCharSequence(topicName, CharsetUtil.UTF_8);
+              return initFrame;
+            }))
+            .then(
+                    new KafkaConsumer(bootstrapServers, name + "-reply", "client").getKafkaFlux()
+                    .filter(bb -> {
+                      final String topicNameConfirmation = bb.toString(CharsetUtil.UTF_8);
+                      bb.release();
+                      return topicNameConfirmation.equals(topicName);
+                    })
+                    .next()
+                    .then(Mono.fromSupplier(() -> new KafkaDuplexConnection(bootstrapServers, topicName, false, allocator)))
+            );
+  }
+
+
+    static Flux<KafkaDuplexConnection> accept(String bootstrapServers, String name, ByteBufAllocator allocator) {
+        final KafkaProducer producer = new KafkaProducer(bootstrapServers, name + "-reply", "server");
+        return new KafkaConsumer(bootstrapServers, name, "server").getKafkaFlux()
+                        .concatMap(bb -> {
+                            final String topicName = bb.toString(CharsetUtil.UTF_8);
+                            return producer.send(Mono.just(bb))
+                                    .then(Mono.fromSupplier(() -> new KafkaDuplexConnection(bootstrapServers, topicName, true, allocator)));
+                        });
+    }
+
+   KafkaDuplexConnection(String bootstrapServers, String name, boolean server, ByteBufAllocator allocator){
     this.allocator = Objects.requireNonNull(allocator, "allocator must not be null");
-    this.onClose = Objects.requireNonNull(onClose, "onClose must not be null");
 
-    if(server){
+    if (server) {
       producer = new KafkaProducer(bootstrapServers, name + "-reply", "server");
       consumer = new KafkaConsumer(bootstrapServers, name, "server");
     }
@@ -50,8 +80,8 @@ final class KafkaDuplexConnection implements DuplexConnection {
 
   @Override
   public Mono<Void> send(Publisher<ByteBuf> frames) {
-    producer.send(frames);
-    return Mono.empty();
+    return producer.send(frames)
+            .then();
   }
 
   @Override
@@ -95,8 +125,8 @@ final class KafkaDuplexConnection implements DuplexConnection {
       sender = KafkaSender.create(senderOptions);
     }
 
-    public void send(Publisher<ByteBuf> frames){
-      sender.<Integer>send(Flux.from(frames)
+    public Mono<Void> send(Publisher<ByteBuf> frames){
+      return sender.<Integer>send(Flux.from(frames)
               .map(frame -> {
                 byte[] bytes = new byte[frame.readableBytes()];
                 frame.readBytes(bytes);
@@ -104,7 +134,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
                 frame.release();
                 return SenderRecord.create(new ProducerRecord<>(topic,null,bytes), 1);
               }))
-              .subscribe();
+              .then();
     }
 
     public void close() {
