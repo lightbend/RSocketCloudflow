@@ -10,6 +10,8 @@ organization in ThisBuild := "lightbend"
 version in ThisBuild := thisVersion
 scalaVersion in ThisBuild := "2.12.10"
 
+//resolvers += "Frog OSS Snapshots" at "https://oss.jfrog.org/oss-snapshot-local"
+
 // settings for a native-packager based docker project based on sbt-docker plugin
 def sbtdockerAppBase(id: String)(base: String = id): Project = Project(id, base = file(base))
   .enablePlugins(sbtdocker.DockerPlugin, JavaAppPackaging)
@@ -57,7 +59,7 @@ lazy val interactions = (project in file("./interactions"))
   )
 
 lazy val transports = (project in file("./transports"))
-  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketLocal, reactorKafka, kafka, curator, commonIO, chronicle, slf4, logback),
+  .settings(libraryDependencies ++= Seq(rsocketCore, rsocketTransport, rsocketLocal, argona, reactorKafka, kafka, curator, commonIO, slf4, logback),
     dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec-http" % "4.1.49.Final",

@@ -8,6 +8,8 @@ object Dependencies {
   val rsocketLocal          = "io.rsocket"          % "rsocket-transport-local"           % RSocketVersion
   val rsocketBalancer       = "io.rsocket"          % "rsocket-load-balancer"             % RSocketVersion
 
+  val argona                = "org.agrona"          % "Agrona"                            % argonaVersion
+
   val reactorKafka          = "io.projectreactor.kafka" % "reactor-kafka"                 % reactorKafkaVersion
   val kafka                 = "org.apache.kafka"    %% "kafka"                            % kafkaVersion
   val curator               = "org.apache.curator"  % "curator-test"                      % curatorVersion
