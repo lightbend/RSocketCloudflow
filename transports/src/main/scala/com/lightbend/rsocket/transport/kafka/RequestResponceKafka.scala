@@ -1,16 +1,15 @@
 package com.lightbend.rsocket.transport.kafka
 
 import com.lightbend.rsocket.transport.kafka.embedded.KafkaEmbedded
-import io.rsocket.core.{RSocketConnector, RSocketServer}
+import io.rsocket.core.{ RSocketConnector, RSocketServer }
 import io.rsocket.util.DefaultPayload
-import io.rsocket.{Payload, SocketAcceptor}
+import io.rsocket.{ Payload, SocketAcceptor }
 import reactor.core.publisher.Mono
 
 object RequestResponceKafka {
 
   private val BOOTSTRAP_SERVERS = "localhost:9092"
   private val TOPIC = "boris"
-
 
   def main(args: Array[String]): Unit = {
 
@@ -23,16 +22,16 @@ object RequestResponceKafka {
       println(s"Server got request ${payload.getDataUtf8}")
       Mono.just(payload)
     }))
-      .bind(KafkaServerTransport.create(BOOTSTRAP_SERVERS,TOPIC))
+      .bind(KafkaServerTransport.create(BOOTSTRAP_SERVERS, TOPIC))
       .subscribe
 
     // Client
     val client = RSocketConnector.create()
-      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS,TOPIC))
+      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS, TOPIC))
       .block
 
     val n = 20
-    1 to n foreach  {i =>
+    1 to n foreach { i =>
       client.requestResponse(DefaultPayload.create("message " + i))
         .map((payload: Payload) => {
           println(s"Client got reply ${payload.getDataUtf8}")

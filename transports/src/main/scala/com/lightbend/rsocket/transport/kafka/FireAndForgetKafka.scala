@@ -22,12 +22,12 @@ object FireAndForgetKafka {
       println(s"Received 'fire-and-forget' request with payload: [${payload.getDataUtf8}]")
       Mono.empty()
     }))
-      .bind(KafkaServerTransport.create(BOOTSTRAP_SERVERS,TOPIC))
+      .bind(KafkaServerTransport.create(BOOTSTRAP_SERVERS, TOPIC))
       .subscribe
 
     // Create client
     val client = RSocketConnector.create()
-      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS,TOPIC))
+      .connect(KafkaClientTransport.create(BOOTSTRAP_SERVERS, TOPIC))
       .block()
 
     // Send some messages

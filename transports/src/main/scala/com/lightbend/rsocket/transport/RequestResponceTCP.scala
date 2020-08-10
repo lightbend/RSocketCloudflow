@@ -33,10 +33,10 @@ object RequestResponceTCP {
     val n = 10000
     val data = repeatChar('x', length).getBytes()
     val start = System.currentTimeMillis()
-    1 to n foreach  {_ =>
+    1 to n foreach { _ =>
       socket.requestResponse(DefaultPayload.create(data))
         .map((payload: Payload) => {
-//          println(s"Got reply ${payload.getDataUtf8}")
+          //          println(s"Got reply ${payload.getDataUtf8}")
           payload.release()
           payload
         })
@@ -47,5 +47,5 @@ object RequestResponceTCP {
   }
 
   // Create a string of length
-  def repeatChar(char:Char, n: Int) = List.fill(n)(char).mkString
+  def repeatChar(char: Char, n: Int) = List.fill(n)(char).mkString
 }
