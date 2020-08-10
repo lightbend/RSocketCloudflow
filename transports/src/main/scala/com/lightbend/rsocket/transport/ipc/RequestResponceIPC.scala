@@ -8,12 +8,13 @@ import io.netty.buffer.ByteBufAllocator
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher._
 import io.rsocket.transport.shm._
-
 import java.time.Duration
+
+import org.slf4j.LoggerFactory
 
 object RequestResponceIPC {
 
-  val length = 1024
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
 
@@ -22,8 +23,9 @@ object RequestResponceIPC {
 
     // Server
     RSocketServer.create(SocketAcceptor.forRequestResponse((payload: Payload) => {
+      // Log request
+      logger.info(s"Received 'request with payload: [${payload.getDataUtf8}] ")
       Mono.just(DefaultPayload.create("Echo:" + payload.getDataUtf8()))
-        .log()
         .doFinally(_ => payload.release())
     }))
       // Enable Zero Copy
@@ -38,13 +40,12 @@ object RequestResponceIPC {
       .connect(SharedMemoryClientTransport.create(8081, ByteBufAllocator.DEFAULT, eventLoopGroup))
       .block
 
-    val n = 5
-    val data = repeatChar('x', length).getBytes()
+    val n = 50
     val start = System.currentTimeMillis()
-    1 to n foreach { _ =>
-      socket.requestResponse(DefaultPayload.create(data))
+    1 to n foreach { i =>
+      socket.requestResponse(DefaultPayload.create(s"new request $i"))
         .map((payload: Payload) => {
-          //          println(s"Got reply ${payload.getDataUtf8}")
+          logger.info(s"Received 'response with payload: [${payload.getDataUtf8}] ")
           payload.release()
           payload
         })
@@ -53,7 +54,4 @@ object RequestResponceIPC {
     println(s"Executed $n request/replies in ${System.currentTimeMillis() - start} ms")
     socket.dispose()
   }
-
-  // Create a string of length
-  def repeatChar(char: Char, n: Int) = List.fill(n)(char).mkString
 }
