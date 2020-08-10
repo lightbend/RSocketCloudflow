@@ -41,18 +41,9 @@ public final class KafkaServerTransport implements ServerTransport<Closeable> {
   }
 
   @Override
-  public Mono<Closeable> start(ConnectionAcceptor acceptor, int mtu) {
+  public Mono<Closeable> start(ConnectionAcceptor acceptor) {
     Objects.requireNonNull(acceptor, "acceptor must not be null");
-    Mono<Closeable> isError = FragmentationDuplexConnection.checkMtu(mtu);
-    if(isError != null)
-      return isError;
     return KafkaDuplexConnection.accept(bootstrapServers, name, ByteBufAllocator.DEFAULT)
-            .map(connection -> {
-              if (mtu > 0)
-                return new FragmentationDuplexConnection(connection, mtu, true, "server");
-              else
-                return new ReassemblyDuplexConnection(connection, false);
-            })
             .concatMap(acceptor)
             .then()
             .transform(Operators.<Void, Closeable>lift((__, actual) -> new KafkaCloseable(actual)));

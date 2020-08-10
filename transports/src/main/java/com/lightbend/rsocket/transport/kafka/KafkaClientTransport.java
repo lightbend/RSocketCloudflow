@@ -41,18 +41,7 @@ public class KafkaClientTransport  implements ClientTransport{
     }
 
     @Override
-    public Mono<DuplexConnection> connect(int mtu) {
-        Mono<DuplexConnection> isError = FragmentationDuplexConnection.checkMtu(mtu);
-        if (isError != null)
-            return isError;
-
-        return KafkaDuplexConnection.create(bootstrapServers, name, ByteBufAllocator.DEFAULT)
-                .map(connection -> {
-                    if (mtu > 0) {
-                        return new FragmentationDuplexConnection(connection, mtu, true, "client");
-                    } else {
-                        return new ReassemblyDuplexConnection(connection, false);
-                    }
-                });
+    public Mono<DuplexConnection> connect() {
+        return KafkaDuplexConnection.create(bootstrapServers, name, ByteBufAllocator.DEFAULT);
     }
 }

@@ -34,7 +34,7 @@ final class KafkaDuplexConnection implements DuplexConnection {
   private final ByteBufAllocator allocator;
   private final MonoProcessor<Void> onClose = MonoProcessor.create();
 
-  static Mono<KafkaDuplexConnection> create(String bootstrapServers, String name, ByteBufAllocator allocator) {
+  static Mono<DuplexConnection> create(String bootstrapServers, String name, ByteBufAllocator allocator) {
     final String topicName = UUID.randomUUID().toString();
     return new KafkaProducer(bootstrapServers, name, "client")
             .send(Mono.fromSupplier(() -> {
