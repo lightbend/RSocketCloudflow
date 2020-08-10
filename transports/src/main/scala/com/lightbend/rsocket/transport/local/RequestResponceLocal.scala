@@ -1,11 +1,11 @@
-package com.lightbend.rsocket.transport
+package com.lightbend.rsocket.transport.local
 
 import io.rsocket._
 import io.rsocket.core._
 import io.rsocket.frame.decoder.PayloadDecoder
+import io.rsocket.transport.local._
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.Mono
-import io.rsocket.transport.local._
 
 object RequestResponceLocal {
 

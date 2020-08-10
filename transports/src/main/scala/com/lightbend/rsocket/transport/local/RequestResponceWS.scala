@@ -1,4 +1,4 @@
-package com.lightbend.rsocket.transport
+package com.lightbend.rsocket.transport.local
 
 import io.rsocket._
 import io.rsocket.core._
@@ -8,7 +8,7 @@ import io.rsocket.transport.netty.server._
 import io.rsocket.util.DefaultPayload
 import reactor.core.publisher.Mono
 
-object RequestResponceTCP {
+object RequestResponceWS {
 
   val length = 1024
 
@@ -21,13 +21,13 @@ object RequestResponceTCP {
     }))
       // Enable Zero Copy
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
-      .bind(TcpServerTransport.create("0.0.0.0", 7000))
+      .bind(WebsocketServerTransport.create("0.0.0.0", 7000))
       .subscribe
 
     // Client
     val socket = RSocketConnector.create()
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
-      .connect(TcpClientTransport.create("localhost", 7000))
+      .connect(WebsocketClientTransport.create("0.0.0.0", 7000))
       .block
 
     val n = 10000
