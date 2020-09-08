@@ -14,6 +14,6 @@ class ValidMetricLogger extends AkkaStreamlet {
 
   override def createLogic = new RunnableGraphStreamletLogic() {
     def runnableGraph =
-      sourceWithOffsetContext(inlet).map(m ⇒ println(s"Current metric is $m")).to(committableSink)
+      sourceWithCommittableContext(inlet).map(m ⇒ println(s"Current metric is $m")).to(committableSink)
   }
 }

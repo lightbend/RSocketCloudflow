@@ -73,7 +73,7 @@ lazy val transports = (project in file("./transports"))
   )
 
 lazy val support = (project in file("./support"))
-  .enablePlugins(CloudflowAkkaStreamsLibraryPlugin)
+  .enablePlugins(CloudflowAkkaPlugin)
   .settings(
     name := "support",
     version := thisVersion,

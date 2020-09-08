@@ -10,7 +10,7 @@ class RotorspeedWindowLogger extends AkkaStreamlet {
   val in = AvroInlet[Metric]("in")
   val shape = StreamletShape(in)
   override def createLogic = new RunnableGraphStreamletLogic() {
-    def runnableGraph = sourceWithOffsetContext(in).via(flow).to(committableSink)
+    def runnableGraph = sourceWithCommittableContext(in).via(flow).to(committableSink)
     def flow =
       FlowWithCommittableContext[Metric]
         .grouped(5)

@@ -30,8 +30,6 @@ class UTF8FireAndForget extends AkkaServerStreamlet with SprayJsonSupport {
 class UTF8FireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[SensorData])
   (implicit context: AkkaStreamletContext, fbu: FromByteStringUnmarshaller[SensorData]) extends ServerStreamletLogic(server) {
 
-  implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
-
   override def run(): Unit = {
     val writer = sinkRef(outlet)
     // Create server

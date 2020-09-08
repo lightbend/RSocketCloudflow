@@ -11,7 +11,8 @@ class InvalidMetricLogger extends AkkaStreamlet {
   val shape = StreamletShape.withInlets(inlet)
 
   override def createLogic = new RunnableGraphStreamletLogic() {
-    def runnableGraph =
-      sourceWithOffsetContext(inlet).map(m ⇒ println(s"Invalid metric detected! $m")).to(committableSink)
+    def runnableGraph = {
+      sourceWithCommittableContext(inlet).map(m ⇒ println(s"Invalid metric detected! $m")).to(committableSink)
+    }
   }
 }
