@@ -29,7 +29,7 @@ The examples here are:
     can reach a server. To demonstrate resumability stop and restart socat.
     * [Channel](interactions/src/main/scala/com/lightbend/rsocket/examples/ChannelEchoClient.scala) 
     demonstrates implementation of a back pressured channel
-* `itransports` - is an experimentations with RSockets pluggable transports (see below)
+* `transports` - is an experimentations with RSockets pluggable transports (see below)
 * `support` is a shared project containing Avro definitions, shared transformation code and experimental Akka implementations
 * `sensordata` is a cloudflow implementation for the [Sensor data Processing](https://cloudflow.io/docs/current/get-started/hello-world-example.html)
 * `client` is an implementation of rsocket-based data provider for publishing sensor data.
@@ -121,8 +121,9 @@ Out of the box, RSocket java supports 3 treansports:
 Some interesting TCP vs Web Sockets comparisons are [here](https://medium.com/kifi-engineering/websockets-vs-regular-sockets-b3b8e7ea0708),
 [here](https://developerinsider.co/difference-between-http-and-http-2-0-websocket/) and
 [here](https://stackoverflow.com/questions/2681267/what-is-the-fundamental-difference-between-websockets-and-pure-tcp)
+For more information on multi transport support in RSocket, reffer to this [blog post](https://www.lightbend.com/blog/implementing-rsocket-ingress-in-cloudflow-part-3-pluggable-transport)
 
-## Kafka Protocol
+### Kafka transport
 
 To demonstrate protocol pluggability, there is a quick implementation of [Kafka transport](transports/src/main/java/com/lightbend/rsocket/transport/kafka) based 
 on the [Reactive Kafka APIs](https://projectreactor.io/docs/kafka/release/reference/)
@@ -142,3 +143,10 @@ is an implementation of RSocket client transport for Kafka
 is an implementation of RSocket server transport for Kafka
 
 A Simple example for using RSocket communications over Kafka can be found [here](transports/src/main/scala/com/lightbend/rsocket/transport/kafka/RequestResponceKafka.scala)
+
+### IPC transport
+
+IPC Transport implementation is based on MappedByteBuffer, which provides access to a memory-mapped region 
+of a file. Since in many operating systems RAM can be mounted as a file system, we can easily use the same 
+MappedByteBuffer for communication over a file or shared memory region.
+Examples leveraging IPC transport can be found [here](transports/src/main/scala/com/lightbend/rsocket/transport/ipc)
