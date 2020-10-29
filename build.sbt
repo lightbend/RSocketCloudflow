@@ -73,10 +73,8 @@ lazy val transports = (project in file("./transports"))
   )
 
 lazy val support = (project in file("./support"))
-  .enablePlugins(CloudflowAkkaPlugin)
+  .enablePlugins(CloudflowLibraryPlugin)
   .settings(
-    name := "support",
-    version := thisVersion,
     libraryDependencies ++= Seq(rsocketCore, rsocketTransport, akkastream, typesafeConfig, ficus, slf4, logback, scalaTest),
     dependencyOverrides += "io.netty" % "netty-buffer" % "4.1.49.Final",
     dependencyOverrides += "io.netty" % "netty-codec" % "4.1.49.Final",
@@ -91,11 +89,11 @@ lazy val support = (project in file("./support"))
   .settings(commonSettings)
 
 lazy val sensorData = (project in file("./sensordata"))
-  .enablePlugins(CloudflowApplicationPlugin)
+  .enablePlugins(CloudflowApplicationPlugin, CloudflowAkkaPlugin)
   .settings(
     name := "sensordata",
     version := thisVersion,
-    libraryDependencies ++= Seq(marshallers)
+    libraryDependencies ++= Seq(marshallers),
   )
   .settings(commonSettings)
   .dependsOn(support)
