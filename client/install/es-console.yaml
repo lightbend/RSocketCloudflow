@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: es-console
+  namespace: cloudflow
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /lbconsole
+            backend:
+              serviceName: console-server
+              servicePort: 80

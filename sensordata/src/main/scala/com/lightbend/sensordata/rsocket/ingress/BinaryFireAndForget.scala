@@ -8,7 +8,7 @@ import com.lightbend.rsocket.dataconversion.SensorDataConverter
 import io.rsocket._
 import io.rsocket.core.RSocketServer
 import io.rsocket.frame.decoder.PayloadDecoder
-import io.rsocket.transport.netty.server.TcpServerTransport
+import io.rsocket.transport.netty.server.WebsocketServerTransport
 import reactor.core.publisher._
 
 class BinaryFireAndForget extends AkkaServerStreamlet {
@@ -34,7 +34,7 @@ class BinaryFireAndForgetStreamletLogic(server: Server, outlet: CodecOutlet[Sens
       Mono.empty()
     }))
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
-      .bind(TcpServerTransport.create("0.0.0.0", containerPort))
+      .bind(WebsocketServerTransport.create("0.0.0.0", containerPort))
       .subscribe
     println(s"Bound RSocket server to port $containerPort")
   }

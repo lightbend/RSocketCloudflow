@@ -4,7 +4,7 @@
     <logger name="org.apache" level="WARN"/>
     <logger name="kafka" level="WARN"/>
     <logger name="org.spark_project.jetty" level="WARN"/>
-    <logger name="io.rsocket" level="INFO"/>
+    <logger name="io.rsocket" level="WARN"/>
     <logger name="FrameLogger" level="WARN"/>
 
 

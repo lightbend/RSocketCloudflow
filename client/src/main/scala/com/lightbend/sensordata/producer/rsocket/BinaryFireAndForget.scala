@@ -3,7 +3,7 @@ package com.lightbend.sensordata.producer.rsocket
 import com.lightbend.rsocket.dataconversion.{ SensorDataConverter, SensorDataGenerator }
 import io.rsocket.core.RSocketConnector
 import io.rsocket.frame.decoder.PayloadDecoder
-import io.rsocket.transport.netty.client.TcpClientTransport
+import io.rsocket.transport.netty.client.WebsocketClientTransport
 import io.rsocket.util.ByteBufPayload
 
 class BinaryFireAndForget(host: String, port: Int, interval: Long) {
@@ -13,7 +13,7 @@ class BinaryFireAndForget(host: String, port: Int, interval: Long) {
     // Create client
     val socket = RSocketConnector.create()
       .payloadDecoder(PayloadDecoder.ZERO_COPY)
-      .connect(TcpClientTransport.create(host, port))
+      .connect(WebsocketClientTransport.create(host, port))
       .block
 
     // Send messages

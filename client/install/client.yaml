@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rsocket-client
+  namespace: sensordata
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rsocket-client
+  template:
+    metadata:
+      labels:
+        app: rsocket-client
+    spec:
+      containers:
+        - name: client
+          image: lightbend/client:0.1
+          imagePullPolicy: Always
+          env:
+            - name: RSOCKET_HOST
+              value: sensordata-rsocket-ingress-service
